@@ -89,7 +89,9 @@ class LMStudioProvider extends AbstractApiProvider {
 			'LM Studio',
 			ProviderTypeEnum::server(),
 			'https://lmstudio.ai/docs/developer/core/authentication',
-			RequestAuthenticationMethod::apiKey()
+			RequestAuthenticationMethod::apiKey(),
+			__( 'LM Studio is a self-hosted platform for managing and deploying large language models (LLMs).', 'ai-provider-for-lmstudio' ),
+			AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'assets/images/lmstudio-logo.svg'
 		);
 	}
 
