@@ -165,7 +165,7 @@ class LMStudioSettings {
 				printf(
 					/* translators: 1: opening anchor tag, 2: closing anchor tag */
 					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'ai-provider-for-lmstudio' ),
-					'<a href="' . esc_url( admin_url( 'options-general.php?page=connectors-wp-admin' ) ) . '">',
+					'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '">',
 					'</a>'
 				);
 				?>
@@ -349,24 +349,6 @@ class LMStudioSettings {
 			'host'          => '',
 			self::KEY_MODEL => '',
 		);
-	}
-
-	/**
-	 * Checks whether a setting flag is enabled.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param array<string, string> $settings       Settings array.
-	 * @param string                $key            Flag key.
-	 * @param bool                  $default_value  Default value when key is missing.
-	 * @return bool True when enabled.
-	 */
-	private static function is_enabled_flag( array $settings, string $key, bool $default_value = true ): bool {
-		if ( ! isset( $settings[ $key ] ) ) {
-			return $default_value;
-		}
-
-		return '0' !== (string) $settings[ $key ];
 	}
 
 	/**
