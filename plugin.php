@@ -19,6 +19,8 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio;
 
+use rtCamp\AiProviderForLMStudio\Plugin;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -27,6 +29,8 @@ define( 'AI_PROVIDER_FOR_LMSTUDIO_MIN_PHP_VERSION', '7.4' );
 define( 'AI_PROVIDER_FOR_LMSTUDIO_MIN_WP_VERSION', '6.9' );
 define( 'AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE', __FILE__ );
+
+require_once AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'src/autoload.php';
 
 /**
  * Displays an admin notice for requirement failures.
@@ -124,26 +128,6 @@ function load(): void {
 	if ( ! check_php_version() || ! check_wp_version() ) {
 		return;
 	}
-
-	if ( ! file_exists( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
-		add_action(
-			'admin_notices',
-			static function () {
-				requirement_notice(
-					sprintf(
-						/* translators: %s: composer install command */
-						esc_html__( 'Your installation of the LM Studio Provider plugin is incomplete. Please run %s.', 'ai-provider-for-lmstudio' ),
-						'<code>composer install</code>'
-					)
-				);
-			},
-			10
-		);
-
-		return;
-	}
-
-	require_once AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'vendor/autoload.php';
 
 	$plugin = new Plugin();
 	$plugin->init();

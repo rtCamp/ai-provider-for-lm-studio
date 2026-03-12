@@ -34,7 +34,6 @@ use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
  */
 class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirectory {
 
-
 	/**
 	 * Sends a request to list all LM Studio models.
 	 * {@inheritDoc}

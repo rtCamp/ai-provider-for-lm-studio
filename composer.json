@@ -30,7 +30,7 @@
     "prefer-stable": true,
     "autoload": {
         "psr-4": {
-            "rtCamp\\AiProviderForLMStudio\\": "includes/"
+            "rtCamp\\AiProviderForLMStudio\\": "src/"
         }
     },
     "config": {
