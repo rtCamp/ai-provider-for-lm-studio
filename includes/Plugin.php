@@ -1,0 +1,208 @@
+<?php
+/**
+ * The main plugin class.
+ *
+ * @since 1.0.0
+ * @package rtcamp/ai-provider-for-lmstudio
+ */
+
+declare( strict_types=1 );
+
+namespace rtCamp\AiProviderForLMStudio;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
+use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
+use WordPress\AiClient\AiClient;
+use WordPress\AiClient\Providers\Http\DTO\ApiKeyRequestAuthentication;
+
+/**
+ * Plugin class.
+ *
+ * @since 1.0.0
+ */
+class Plugin {
+
+	/**
+	 * Initializes the plugin.
+	 *
+	 * @since 1.0.0
+	 */
+	public function init(): void {
+		add_action( 'init', array( $this, 'register_provider' ), 5 );
+		add_action( 'init', array( $this, 'register_fallback_auth' ), 15 );
+		add_action( 'init', array( $this, 'initialize_settings' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
+		add_filter( 'http_request_host_is_external', array( $this, 'allow_localhost_requests' ), 10, 3 );
+		add_filter( 'http_allowed_safe_ports', array( $this, 'allow_lmstudio_ports' ) );
+		add_filter( 'http_request_args', array( $this, 'extend_lmstudio_timeout' ), 10, 2 );
+	}
+
+	/**
+	 * Gets the LM Studio host.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string The LM Studio host.
+	 */
+	private function get_lmstudio_host(): string {
+		$host = getenv( 'LMSTUDIO_HOST' );
+		if ( false !== $host && '' !== $host ) {
+			return $host;
+		}
+
+		$settings = LMStudioSettings::get_settings();
+		if ( isset( $settings['host'] ) && '' !== $settings['host'] ) {
+			return $settings['host'];
+		}
+
+		return 'http://localhost:1234';
+	}
+
+	/**
+	 * Registers the LM Studio provider with the AI Client.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_provider(): void {
+		if ( ! class_exists( AiClient::class ) ) {
+			return;
+		}
+
+		$registry = AiClient::defaultRegistry();
+
+		if ( $registry->hasProvider( LMStudioProvider::class ) ) {
+			return;
+		}
+
+		$registry->registerProvider( LMStudioProvider::class );
+	}
+
+	/**
+	 * Registers fallback authentication for LM Studio.
+	 *
+	 * Local LM Studio does not require authentication by default, so this sets an
+	 * empty API key only when no credentials were already configured.
+	 *
+	 * @since 1.0.0
+	 */
+	public function register_fallback_auth(): void {
+		if ( ! class_exists( AiClient::class ) ) {
+			return;
+		}
+
+		$registry = AiClient::defaultRegistry();
+
+		if ( ! $registry->hasProvider( 'lmstudio' ) ) {
+			return;
+		}
+
+		$auth = $registry->getProviderRequestAuthentication( 'lmstudio' );
+		if ( null !== $auth ) {
+			return;
+		}
+
+		$registry->setProviderRequestAuthentication(
+			'lmstudio',
+			new ApiKeyRequestAuthentication( '' )
+		);
+	}
+
+	/**
+	 * Initializes the LM Studio settings.
+	 *
+	 * @since 1.0.0
+	 */
+	public function initialize_settings(): void {
+		$settings = new LMStudioSettings();
+		$settings->init();
+	}
+
+	/**
+	 * Adds action links to the plugin list table.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string> $links Existing action links.
+	 * @return array<string> Modified action links.
+	 */
+	public function plugin_action_links( array $links ): array {
+		$settings_link = sprintf(
+			'<a href="%1$s">%2$s</a>',
+			admin_url( 'options-general.php?page=ai-provider-for-lmstudio' ),
+			esc_html__( 'Settings', 'ai-provider-for-lmstudio' )
+		);
+
+		array_unshift( $links, $settings_link );
+
+		return $links;
+	}
+
+	/**
+	 * Allows localhost requests to the configured LM Studio host.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param bool   $external Whether the request is external.
+	 * @param string $host The host of the request.
+	 * @param string $url The URL of the request.
+	 * @return bool Whether the request is allowed.
+	 */
+	public function allow_localhost_requests( $external, $host, $url ): bool {
+		if ( strpos( $url, $this->get_lmstudio_host() ) !== false ) {
+			return true;
+		}
+
+		return $external;
+	}
+
+	/**
+	 * Allows the configured LM Studio port.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<int> $ports The ports.
+	 * @return array<int> The allowed ports.
+	 */
+	public function allow_lmstudio_ports( $ports ): array {
+		$lmstudio_host = $this->get_lmstudio_host();
+		$lmstudio_port = wp_parse_url( $lmstudio_host, PHP_URL_PORT );
+
+		if ( ! $lmstudio_port ) {
+			return $ports;
+		}
+
+		return array_merge( $ports, array( $lmstudio_port ) );
+	}
+
+	/**
+	 * Extends timeout for requests to the configured LM Studio host.
+	 *
+	 * Some environments cap outbound requests at around 30 seconds by default,
+	 * which can be too low when LM Studio is loading or warming a model.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $args HTTP request args.
+	 * @param string               $url  Request URL.
+	 * @return array<string, mixed> Filtered HTTP request args.
+	 */
+	public function extend_lmstudio_timeout( array $args, string $url ): array {
+		if ( strpos( $url, $this->get_lmstudio_host() ) === false ) {
+			return $args;
+		}
+
+		$existing_timeout = isset( $args['timeout'] ) && is_numeric( $args['timeout'] )
+			? (float) $args['timeout']
+			: 0.0;
+
+		if ( $existing_timeout < 180.0 ) {
+			$args['timeout'] = 180.0;
+		}
+
+		return $args;
+	}
+}
