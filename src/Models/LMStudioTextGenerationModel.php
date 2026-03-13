@@ -11,7 +11,6 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio\Models;
 
-use WordPress\AiClient\Messages\DTO\Message;
 use WordPress\AiClient\Providers\Http\DTO\Request;
 use WordPress\AiClient\Providers\Http\DTO\RequestOptions;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
@@ -35,7 +34,8 @@ class LMStudioTextGenerationModel extends AbstractOpenAiCompatibleTextGeneration
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param list<Message> $prompt Prompt messages.
+	 * @param array $prompt Prompt messages.
+	 * @phpstan-param list<\WordPress\AiClient\Messages\DTO\Message> $prompt
 	 * @return array<string, mixed>
 	 */
 	protected function prepareGenerateTextParams( array $prompt ): array {
@@ -46,7 +46,15 @@ class LMStudioTextGenerationModel extends AbstractOpenAiCompatibleTextGeneration
 			$params['model'] = $selected_model;
 		}
 
-		return $params;
+		$selected_reasoning = LMStudioSettings::get_selected_reasoning();
+		if ( '' !== $selected_reasoning ) {
+			$params['reasoning'] = $selected_reasoning;
+		} else {
+			// Default to "off" for LM Studio to avoid unexpected latency from on-device reasoning when users select a model that supports it without realizing.
+			$params['reasoning'] = 'off';
+		}
+
+		return apply_filters( 'lm_studio_text_generation_params', $params );
 	}
 
 	/**

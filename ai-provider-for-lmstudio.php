@@ -5,6 +5,7 @@
  * Description:       LM Studio provider for the WordPress AI Client.
  * Requires at least: 7.0
  * Requires PHP:      7.4
+ * Requires Plugins:  ai
  * Version:           1.0.0
  * Author:            rtCamp
  * Author URI:        https://rtcamp.com
