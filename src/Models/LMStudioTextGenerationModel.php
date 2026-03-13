@@ -218,19 +218,6 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		$path = '/' . ltrim( $path, '/' );
 		$url  = LMStudioProvider::url( $path );
 
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only for LM Studio outgoing requests.
-			error_log(
-				'LM Studio request: ' . wp_json_encode(
-					[
-						'path' => $path,
-						'url'  => $url,
-						'body' => $data,
-					]
-				)
-			);
-		}
-
 		return new Request(
 			$method,
 			$url,
