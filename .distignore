@@ -1,0 +1,87 @@
+# Development and testing files
+/.github
+/.wordpress-org
+/node_modules
+/tests
+/bin
+/.editorconfig
+/.eslintignore
+/.eslintrc.json
+/.gitignore
+/.stylelintignore
+/.stylelintrc.json
+/.nvmrc
+/babel.config.js
+/webpack.config.js
+/phpcs.xml.dist
+/phpstan.neon.dist
+/phpunit.xml.dist
+/tsconfig.json
+/composer.json
+/composer.lock
+/package.json
+/package-lock.json
+/.browserslistrc
+/.wp-env.json
+/CHANGELOG.md
+/README.md
+/CONTRIBUTING.md
+/CODE_OF_CONDUCT.md
+/SECURITY.md
+/docs
+
+# Assets source files (only include built files)
+/assets/src
+
+# Development vendor dependencies (exclude ALL except production dependencies)
+/vendor/automattic
+/vendor/dealerdirect
+/vendor/doctrine
+/vendor/myclabs
+/vendor/nikic
+/vendor/phar-io
+/vendor/php-stubs
+/vendor/phpcompatibility
+/vendor/phpcsstandards
+/vendor/phpstan
+/vendor/phpunit
+/vendor/ralouphie
+/vendor/sebastian
+/vendor/sirbrillig
+/vendor/slevomat
+/vendor/squizlabs
+/vendor/szepeviktor
+/vendor/symfony
+/vendor/theseer
+/vendor/wp-coding-standards
+/vendor/wp-phpunit
+/vendor/wpackagist-plugin
+/vendor/yoast
+/vendor/bin
+
+# All other vendor dependencies are dev-only
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# CI/CD files
+/.github
+
+# IDE files
+.vscode
+.idea
+*.sublime-project
+*.sublime-workspace
+
+# macOS files
+.DS_Store
+._*
+
+# Windows files
+Thumbs.db
+desktop.ini
+
+# Test output
+/tests/_output

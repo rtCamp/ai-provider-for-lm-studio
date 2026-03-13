@@ -14,10 +14,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
-use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
 use WordPress\AiClient\AiClient;
 use WordPress\AiClient\Providers\Http\DTO\ApiKeyRequestAuthentication;
+use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
+use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
 
 /**
  * Plugin class.
@@ -32,13 +32,14 @@ class Plugin {
 	 * @since 1.0.0
 	 */
 	public function init(): void {
-		add_action( 'init', array( $this, 'register_provider' ), 5 );
-		add_action( 'init', array( $this, 'register_fallback_auth' ), 15 );
-		add_action( 'init', array( $this, 'initialize_settings' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
-		add_filter( 'http_request_host_is_external', array( $this, 'allow_localhost_requests' ), 10, 3 );
-		add_filter( 'http_allowed_safe_ports', array( $this, 'allow_lmstudio_ports' ) );
-		add_filter( 'http_request_args', array( $this, 'extend_lmstudio_timeout' ), 10, 2 );
+		add_action( 'init', [ $this, 'register_provider' ], 5 );
+		add_action( 'init', [ $this, 'register_fallback_auth' ], 15 );
+		add_action( 'init', [ $this, 'initialize_settings' ] );
+		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ), [ $this, 'plugin_action_links' ] );
+		add_filter( 'http_request_host_is_external', [ $this, 'allow_localhost_requests' ], 10, 3 );
+		add_filter( 'http_allowed_safe_ports', [ $this, 'allow_lmstudio_ports' ] );
+		// phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Scoped to the configured LM Studio host to support local model inference.
+		add_filter( 'http_request_args', [ $this, 'extend_lmstudio_timeout' ], 10, 2 );
 	}
 
 	/**
@@ -175,7 +176,7 @@ class Plugin {
 			return $ports;
 		}
 
-		return array_merge( $ports, array( $lmstudio_port ) );
+		return array_merge( $ports, [ $lmstudio_port ] );
 	}
 
 	/**
@@ -200,6 +201,7 @@ class Plugin {
 			: 0.0;
 
 		if ( $existing_timeout < 180.0 ) {
+			// phpcs:ignore WordPressVIPMinimum.Performance.RemoteRequestTimeout.timeout_timeout -- Local model warm-up can exceed the default HTTP timeout.
 			$args['timeout'] = 180.0;
 		}
 

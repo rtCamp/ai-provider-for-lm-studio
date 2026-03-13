@@ -19,8 +19,6 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio;
 
-use rtCamp\AiProviderForLMStudio\Plugin;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }

@@ -11,17 +11,16 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio\Metadata;
 
-use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
 use WordPress\AiClient\Messages\Enums\ModalityEnum;
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiBasedModelMetadataDirectory;
 use WordPress\AiClient\Providers\Http\DTO\Request;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
-use WordPress\AiClient\Providers\Http\Exception\ResponseException;
 use WordPress\AiClient\Providers\Http\Util\ResponseUtil;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
 use WordPress\AiClient\Providers\Models\DTO\SupportedOption;
 use WordPress\AiClient\Providers\Models\Enums\CapabilityEnum;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
+use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
 
 /**
  * Class for the LM Studio model metadata directory.
@@ -38,7 +37,7 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	 * Sends a request to list all LM Studio models.
 	 * {@inheritDoc}
 	 *
-	 * @throws ResponseException If the API response is not successful or does not contain expected data.
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the API response is not successful or does not contain expected data.
 	 *
 	 * @since 1.0.0
 	 */
@@ -65,10 +64,10 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		 */
 		$models_data = $response->getData();
 		if ( ! isset( $models_data['data'] ) || ! is_array( $models_data['data'] ) ) {
-			throw ResponseException::fromMissingData( 'LM Studio', 'data' );
+			throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromMissingData( 'LM Studio', 'data' );
 		}
 
-		$models_map = array();
+		$models_map = [];
 		foreach ( $models_data['data'] as $model_entry ) {
 			if ( ! isset( $model_entry['id'] ) || ! is_string( $model_entry['id'] ) || '' === trim( $model_entry['id'] ) ) {
 				continue;
@@ -95,11 +94,11 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		return new ModelMetadata(
 			$model_id,
 			$model_id,
-			array(
+			[
 				CapabilityEnum::textGeneration(),
 				CapabilityEnum::chatHistory(),
-			),
-			array(
+			],
+			[
 				new SupportedOption( OptionEnum::systemInstruction() ),
 				new SupportedOption( OptionEnum::candidateCount() ),
 				new SupportedOption( OptionEnum::maxTokens() ),
@@ -109,13 +108,13 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 				new SupportedOption( OptionEnum::stopSequences() ),
 				new SupportedOption( OptionEnum::frequencyPenalty() ),
 				new SupportedOption( OptionEnum::presencePenalty() ),
-				new SupportedOption( OptionEnum::outputMimeType(), array( 'text/plain', 'application/json' ) ),
+				new SupportedOption( OptionEnum::outputMimeType(), [ 'text/plain', 'application/json' ] ),
 				new SupportedOption( OptionEnum::outputSchema() ),
 				new SupportedOption( OptionEnum::functionDeclarations() ),
 				new SupportedOption( OptionEnum::customOptions() ),
-				new SupportedOption( OptionEnum::outputModalities(), array( array( ModalityEnum::text() ) ) ),
-				new SupportedOption( OptionEnum::inputModalities(), array( array( ModalityEnum::text() ) ) ),
-			),
+				new SupportedOption( OptionEnum::outputModalities(), [ [ ModalityEnum::text() ] ] ),
+				new SupportedOption( OptionEnum::inputModalities(), [ [ ModalityEnum::text() ] ] ),
+			],
 		);
 	}
 
@@ -130,7 +129,7 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	 * @param string|array<string, mixed>|null                        $data    The request data.
 	 * @return \WordPress\AiClient\Providers\Http\DTO\Request The request object.
 	 */
-	private function createRequest( HttpMethodEnum $method, string $path, array $headers = array(), $data = null ): Request {
+	private function createRequest( HttpMethodEnum $method, string $path, array $headers = [], $data = null ): Request {
 		return new Request(
 			$method,
 			LMStudioProvider::url( $path ),

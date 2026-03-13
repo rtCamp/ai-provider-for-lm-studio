@@ -38,10 +38,10 @@ class LMStudioSettings {
 	 * @since 1.0.0
 	 */
 	public function init(): void {
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-		add_action( 'admin_menu', array( $this, 'register_settings_screen' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_settings_script' ) );
-		add_action( 'wp_ajax_' . self::AJAX_ACTION, array( $this, 'ajax_list_models' ) );
+		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_menu', [ $this, 'register_settings_screen' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_settings_script' ] );
+		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_list_models' ] );
 	}
 
 	/**
@@ -53,11 +53,11 @@ class LMStudioSettings {
 		register_setting(
 			self::OPTION_GROUP,
 			self::OPTION_NAME,
-			array(
+			[
 				'type'              => 'array',
-				'default'           => array(),
-				'sanitize_callback' => array( $this, 'sanitize_settings' ),
-			)
+				'default'           => [],
+				'sanitize_callback' => [ $this, 'sanitize_settings' ],
+			]
 		);
 
 		add_settings_section(
@@ -70,19 +70,19 @@ class LMStudioSettings {
 		add_settings_field(
 			self::OPTION_NAME . '_host',
 			__( 'Host URL', 'ai-provider-for-lmstudio' ),
-			array( $this, 'render_host_field' ),
+			[ $this, 'render_host_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
-			array( 'label_for' => self::OPTION_NAME . '-host' )
+			[ 'label_for' => self::OPTION_NAME . '-host' ]
 		);
 
 		add_settings_field(
 			self::OPTION_NAME . '_model',
 			__( 'Available Models', 'ai-provider-for-lmstudio' ),
-			array( $this, 'render_available_models_field' ),
+			[ $this, 'render_available_models_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
-			array( 'label_for' => self::OPTION_NAME . '-model' )
+			[ 'label_for' => self::OPTION_NAME . '-model' ]
 		);
 	}
 
@@ -97,7 +97,7 @@ class LMStudioSettings {
 			__( 'LM Studio Settings', 'ai-provider-for-lmstudio' ),
 			'manage_options',
 			self::PAGE_SLUG,
-			array( $this, 'render_screen' )
+			[ $this, 'render_screen' ]
 		);
 	}
 
@@ -121,10 +121,10 @@ class LMStudioSettings {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
-		return array(
+		return [
 			'host'          => $host,
 			self::KEY_MODEL => $model,
-		);
+		];
 	}
 
 	/**
@@ -270,7 +270,7 @@ class LMStudioSettings {
 		wp_enqueue_script(
 			'ai-provider-for-lmstudio-settings',
 			plugins_url( 'assets/settings-models.js', AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ),
-			array(),
+			[],
 			'1.0.0',
 			true
 		);
@@ -278,10 +278,10 @@ class LMStudioSettings {
 		wp_localize_script(
 			'ai-provider-for-lmstudio-settings',
 			'aiProviderForLMStudioSettings',
-			array(
+			[
 				'ajaxUrl'       => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
 				'selectedModel' => self::get_selected_model(),
-			)
+			]
 		);
 	}
 
@@ -332,7 +332,7 @@ class LMStudioSettings {
 	 * @return array<string, string> The settings.
 	 */
 	public static function get_settings(): array {
-		$settings = (array) get_option( self::OPTION_NAME, array() );
+		$settings = (array) get_option( self::OPTION_NAME, [] );
 
 		return array_merge( self::get_default_settings(), $settings );
 	}
@@ -345,10 +345,10 @@ class LMStudioSettings {
 	 * @return array<string, string> Default settings.
 	 */
 	private static function get_default_settings(): array {
-		return array(
+		return [
 			'host'          => '',
 			self::KEY_MODEL => '',
-		);
+		];
 	}
 
 	/**

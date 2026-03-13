@@ -11,17 +11,17 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio\Provider;
 
-use rtCamp\AiProviderForLMStudio\Metadata\LMStudioModelMetadataDirectory;
-use rtCamp\AiProviderForLMStudio\Models\LMStudioTextGenerationModel;
-use WordPress\AiClient\Common\Exception\RuntimeException;
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiProvider;
 use WordPress\AiClient\Providers\Contracts\ModelMetadataDirectoryInterface;
 use WordPress\AiClient\Providers\Contracts\ProviderAvailabilityInterface;
 use WordPress\AiClient\Providers\DTO\ProviderMetadata;
 use WordPress\AiClient\Providers\Enums\ProviderTypeEnum;
 use WordPress\AiClient\Providers\Http\Enums\RequestAuthenticationMethod;
+use WordPress\AiClient\Common\Exception\RuntimeException;
 use WordPress\AiClient\Providers\Models\Contracts\ModelInterface;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
+use rtCamp\AiProviderForLMStudio\Metadata\LMStudioModelMetadataDirectory;
+use rtCamp\AiProviderForLMStudio\Models\LMStudioTextGenerationModel;
 
 /**
  * Class for the LM Studio provider.
@@ -52,12 +52,12 @@ class LMStudioProvider extends AbstractApiProvider {
 	/**
 	 * Creates a model instance based on the provided metadata.
 	 *
-	 * @param ModelMetadata    $model_metadata    The model metadata.
-	 * @param ProviderMetadata $provider_metadata The provider metadata.
+	 * @param \WordPress\AiClient\Providers\Models\DTO\ModelMetadata $model_metadata    The model metadata.
+	 * @param \WordPress\AiClient\Providers\DTO\ProviderMetadata     $provider_metadata The provider metadata.
 	 *
-	 * @return ModelInterface The created model instance.
+	 * @return \WordPress\AiClient\Providers\Models\Contracts\ModelInterface The created model instance.
 	 *
-	 * @throws RuntimeException If the model capabilities are unsupported.
+	 * @throws \WordPress\AiClient\Common\Exception\RuntimeException If the model capabilities are unsupported.
 	 *
 	 * @since 1.0.0
 	 */
