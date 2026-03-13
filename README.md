@@ -46,12 +46,24 @@ If your LM Studio server requires authentication, set the API token in **Setting
 
 ## Usage (WordPress)
 
+- Text generation example:
 ```php
 use WordPress\AI_Client\Prompt_Builder;
 
 $result = Prompt_Builder::create()
     ->using_provider( 'lmstudio' )
+    ->set_model( 'gpt-4o' ) // LM Studio model name
     ->set_system_instruction( 'You are a helpful assistant.' )
     ->add_text_message( 'Write a short haiku about sunrise.' )
     ->generate_text();
+```
+- Image generation example:
+
+```php
+use WordPress\AI_Client\Prompt_Builder;
+$result = Prompt_Builder::create()
+    ->using_provider( 'lmstudio' )
+    ->set_model( 'black-forest-labs/flux.2-pro' ) // LM Studio image model
+    ->add_text_message( 'Generate an image of a futuristic city skyline at sunset.' )
+    ->generate_image();
 ```
