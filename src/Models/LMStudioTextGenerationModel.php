@@ -11,42 +11,89 @@ declare( strict_types=1 );
 
 namespace rtCamp\AiProviderForLMStudio\Models;
 
+use WordPress\AiClient\Messages\DTO\Message;
+use WordPress\AiClient\Messages\DTO\MessagePart;
+use WordPress\AiClient\Messages\DTO\ModelMessage;
+use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiBasedModel;
 use WordPress\AiClient\Providers\Http\DTO\Request;
 use WordPress\AiClient\Providers\Http\DTO\RequestOptions;
+use WordPress\AiClient\Providers\Http\DTO\Response;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
-use WordPress\AiClient\Providers\OpenAiCompatibleImplementation\AbstractOpenAiCompatibleTextGenerationModel;
+use WordPress\AiClient\Providers\Http\Util\ResponseUtil;
+use WordPress\AiClient\Providers\Models\TextGeneration\Contracts\TextGenerationModelInterface;
+use WordPress\AiClient\Results\DTO\Candidate;
+use WordPress\AiClient\Results\DTO\GenerativeAiResult;
+use WordPress\AiClient\Results\DTO\TokenUsage;
+use WordPress\AiClient\Results\Enums\FinishReasonEnum;
 use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
 use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
 
 /**
  * Class for an LM Studio text generation model.
  *
- * Uses LM Studio's OpenAI-compatible endpoints.
+ * Uses LM Studio REST API endpoints.
  *
  * @since 1.0.0
  */
-class LMStudioTextGenerationModel extends AbstractOpenAiCompatibleTextGenerationModel {
+class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextGenerationModelInterface {
 
 	/**
 	 * {@inheritDoc}
+	 *
+	 * Uses LM Studio REST API endpoint /api/v1/chat.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $prompt Prompt messages.
+	 * @phpstan-param list<Message> $prompt
+	 * @return \WordPress\AiClient\Results\DTO\GenerativeAiResult
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException When LM Studio returns an invalid response payload.
+	 */
+	public function generateTextResult( array $prompt ): GenerativeAiResult {
+		$params  = $this->prepareGenerateTextParams( $prompt );
+		$request = $this->createRequest(
+			HttpMethodEnum::POST(),
+			'/api/v1/chat',
+			[ 'Content-Type' => 'application/json' ],
+			$params
+		);
+
+		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
+		$response = $this->getHttpTransporter()->send( $request );
+
+		ResponseUtil::throwIfNotSuccessful( $response );
+
+		return $this->parseResponseToGenerativeAiResult( $response );
+	}
+
+	/**
+	 * Prepares parameters for LM Studio REST API chat endpoint.
 	 *
 	 * Applies provider-level default model override before sending.
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param array $prompt Prompt messages.
-	 * @phpstan-param list<\WordPress\AiClient\Messages\DTO\Message> $prompt
+	 * @phpstan-param list<Message> $prompt
 	 * @return array<string, mixed>
 	 */
 	protected function prepareGenerateTextParams( array $prompt ): array {
-		$params = parent::prepareGenerateTextParams( $prompt );
+		$params = [
+			'model' => $this->metadata()->getId(),
+			'input' => $this->prepareInputParam( $prompt ),
+		];
+
+		$system_instruction = $this->getConfig()->getSystemInstruction();
+		if ( null !== $system_instruction && '' !== trim( $system_instruction ) ) {
+			$params['system_prompt'] = $system_instruction;
+		}
 
 		$selected_model = LMStudioSettings::get_selected_model();
 		if ( '' !== $selected_model ) {
 			$params['model'] = $selected_model;
 		}
 
-		$selected_reasoning = LMStudioSettings::get_selected_reasoning();
+		$selected_reasoning = $this->normalizeReasoningMode( LMStudioSettings::get_selected_reasoning() );
 		if ( '' !== $selected_reasoning ) {
 			$params['reasoning'] = $selected_reasoning;
 		} else {
@@ -54,7 +101,100 @@ class LMStudioTextGenerationModel extends AbstractOpenAiCompatibleTextGeneration
 			$params['reasoning'] = 'off';
 		}
 
+		$max_tokens = $this->getConfig()->getMaxTokens();
+		if ( null !== $max_tokens ) {
+			$params['max_tokens'] = $max_tokens;
+		}
+
+		$temperature = $this->getConfig()->getTemperature();
+		if ( null !== $temperature ) {
+			$params['temperature'] = $temperature;
+		}
+
+		$custom_options = $this->getConfig()->getCustomOptions();
+		foreach ( $custom_options as $key => $value ) {
+			if ( isset( $params[ $key ] ) ) {
+				continue;
+			}
+
+			$params[ $key ] = $value;
+		}
+
 		return apply_filters( 'lm_studio_text_generation_params', $params );
+	}
+
+	/**
+	 * Normalizes saved reasoning mode to values accepted by LM Studio chat API.
+	 *
+	 * Some models support only "on" and "off". Legacy values like "low",
+	 * "medium", and "high" are mapped to "on" for compatibility.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $reasoning Reasoning mode.
+	 * @return string
+	 */
+	private function normalizeReasoningMode( string $reasoning ): string {
+		if ( in_array( $reasoning, [ 'low', 'medium', 'high', 'on' ], true ) ) {
+			return 'on';
+		}
+
+		if ( 'off' === $reasoning ) {
+			return 'off';
+		}
+
+		return '';
+	}
+
+	/**
+	 * Converts prompt messages into a single LM Studio REST input string.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array $prompt Prompt messages.
+	 * @phpstan-param list<Message> $prompt
+	 * @return string
+	 */
+	private function prepareInputParam( array $prompt ): string {
+		$lines = [];
+
+		foreach ( $prompt as $message ) {
+			$text = $this->extractMessageText( $message );
+			if ( '' === $text ) {
+				continue;
+			}
+
+			$role_prefix = $message->getRole()->isModel() ? 'Assistant' : 'User';
+			$lines[]     = $role_prefix . ': ' . $text;
+		}
+
+		if ( 1 === count( $lines ) && str_starts_with( $lines[0], 'User: ' ) ) {
+			return substr( $lines[0], 6 );
+		}
+
+		return implode( "\n", $lines );
+	}
+
+	/**
+	 * Extracts text content from a message.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WordPress\AiClient\Messages\DTO\Message $message Message.
+	 * @return string
+	 */
+	private function extractMessageText( Message $message ): string {
+		$chunks = [];
+
+		foreach ( $message->getParts() as $part ) {
+			$text = $part->getText();
+			if ( null === $text || '' === trim( $text ) ) {
+				continue;
+			}
+			$chunks[] = $text;
+		}
+
+		return implode( "\n", $chunks );
 	}
 
 	/**
@@ -75,16 +215,165 @@ class LMStudioTextGenerationModel extends AbstractOpenAiCompatibleTextGeneration
 		array $headers = [],
 		$data = null
 	): Request {
-		$path = ltrim( (string) preg_replace( '#^v1/?#', '', ltrim( $path, '/' ) ), '/' );
-		$path = '/v1/' . $path;
+		$path = '/' . ltrim( $path, '/' );
+		$url  = LMStudioProvider::url( $path );
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Debug logging only for LM Studio outgoing requests.
+			error_log(
+				'LM Studio request: ' . wp_json_encode(
+					[
+						'path' => $path,
+						'url'  => $url,
+						'body' => $data,
+					]
+				)
+			);
+		}
 
 		return new Request(
 			$method,
-			LMStudioProvider::url( $path ),
+			$url,
 			$headers,
 			$data,
 			$this->prepareRequestOptionsForTextGeneration()
 		);
+	}
+
+	/**
+	 * Parses LM Studio REST response into a GenerativeAiResult.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param \WordPress\AiClient\Providers\Http\DTO\Response $response HTTP response.
+	 * @return \WordPress\AiClient\Results\DTO\GenerativeAiResult
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException When response cannot be parsed.
+	 */
+	private function parseResponseToGenerativeAiResult( Response $response ): GenerativeAiResult {
+		$data = $response->getData();
+		if ( ! is_array( $data ) ) {
+			throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromInvalidData( 'LM Studio REST', 'body', 'Response is not a JSON object.' );
+		}
+
+		$text = $this->extractOutputTextFromResponseData( $data );
+		if ( '' === $text ) {
+			throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromMissingData( 'LM Studio REST', 'output' );
+		}
+
+		$usage = $this->extractTokenUsageFromResponseData( $data );
+
+		$id = '';
+		if ( isset( $data['id'] ) && is_string( $data['id'] ) && '' !== $data['id'] ) {
+			$id = $data['id'];
+		} else {
+			$id = 'lmstudio-' . wp_generate_uuid4();
+		}
+
+		$candidate = new Candidate(
+			new ModelMessage( [ new MessagePart( $text ) ] ),
+			FinishReasonEnum::stop()
+		);
+
+		return new GenerativeAiResult(
+			$id,
+			[ $candidate ],
+			$usage,
+			$this->providerMetadata(),
+			$this->metadata(),
+			[ 'lmstudio_response' => $data ]
+		);
+	}
+
+	/**
+	 * Extracts output text from known LM Studio response shapes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $data Response data.
+	 * @return string
+	 */
+	private function extractOutputTextFromResponseData( array $data ): string {
+		$candidates = [];
+
+		if ( isset( $data['output'] ) && is_array( $data['output'] ) ) {
+			foreach ( $data['output'] as $item ) {
+				if ( ! is_array( $item ) ) {
+					continue;
+				}
+
+				if ( ! isset( $item['type'] ) || 'message' !== $item['type'] || ! isset( $item['content'] ) || ! is_string( $item['content'] ) ) {
+					continue;
+				}
+
+				$candidates[] = $item['content'];
+			}
+		}
+
+		if ( isset( $data['output'] ) && is_string( $data['output'] ) ) {
+			$candidates[] = $data['output'];
+		}
+
+		if ( isset( $data['response'] ) && is_string( $data['response'] ) ) {
+			$candidates[] = $data['response'];
+		}
+
+		if ( isset( $data['content'] ) && is_string( $data['content'] ) ) {
+			$candidates[] = $data['content'];
+		}
+
+		if ( isset( $data['message'] ) && is_array( $data['message'] ) && isset( $data['message']['content'] ) && is_string( $data['message']['content'] ) ) {
+			$candidates[] = $data['message']['content'];
+		}
+
+		if (
+			isset( $data['choices'] )
+			&& is_array( $data['choices'] )
+			&& isset( $data['choices'][0] )
+			&& is_array( $data['choices'][0] )
+		) {
+			$choice = $data['choices'][0];
+			if ( isset( $choice['text'] ) && is_string( $choice['text'] ) ) {
+				$candidates[] = $choice['text'];
+			}
+			if ( isset( $choice['message'] ) && is_array( $choice['message'] ) && isset( $choice['message']['content'] ) && is_string( $choice['message']['content'] ) ) {
+				$candidates[] = $choice['message']['content'];
+			}
+		}
+
+		foreach ( $candidates as $candidate ) {
+			if ( '' !== trim( $candidate ) ) {
+				return $candidate;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Extracts token usage from known LM Studio response shapes.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param array<string, mixed> $data Response data.
+	 * @return \WordPress\AiClient\Results\DTO\TokenUsage
+	 */
+	private function extractTokenUsageFromResponseData( array $data ): TokenUsage {
+		$usage = isset( $data['usage'] ) && is_array( $data['usage'] ) ? $data['usage'] : [];
+		$stats = isset( $data['stats'] ) && is_array( $data['stats'] ) ? $data['stats'] : [];
+
+		$prompt_tokens = isset( $usage['prompt_tokens'] ) && is_numeric( $usage['prompt_tokens'] )
+			? (int) $usage['prompt_tokens']
+			: ( isset( $usage['input_tokens'] ) && is_numeric( $usage['input_tokens'] ) ? (int) $usage['input_tokens'] : ( isset( $stats['input_tokens'] ) && is_numeric( $stats['input_tokens'] ) ? (int) $stats['input_tokens'] : 0 ) );
+
+		$completion_tokens = isset( $usage['completion_tokens'] ) && is_numeric( $usage['completion_tokens'] )
+			? (int) $usage['completion_tokens']
+			: ( isset( $usage['output_tokens'] ) && is_numeric( $usage['output_tokens'] ) ? (int) $usage['output_tokens'] : ( isset( $stats['total_output_tokens'] ) && is_numeric( $stats['total_output_tokens'] ) ? (int) $stats['total_output_tokens'] : 0 ) );
+
+		$total_tokens = isset( $usage['total_tokens'] ) && is_numeric( $usage['total_tokens'] )
+			? (int) $usage['total_tokens']
+			: ( isset( $stats['total_tokens'] ) && is_numeric( $stats['total_tokens'] ) ? (int) $stats['total_tokens'] : $prompt_tokens + $completion_tokens );
+
+		return new TokenUsage( $prompt_tokens, $completion_tokens, $total_tokens );
 	}
 
 	/**

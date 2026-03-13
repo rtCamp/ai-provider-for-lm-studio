@@ -130,7 +130,7 @@ class LMStudioSettings {
 		$model     = trim( $model );
 		$reasoning = trim( $reasoning );
 
-		if ( ! in_array( $reasoning, [ '', 'off', 'low', 'medium', 'high' ], true ) ) {
+		if ( ! in_array( $reasoning, [ '', 'off', 'on', 'low', 'medium', 'high' ], true ) ) {
 			$reasoning = '';
 		}
 
@@ -294,6 +294,9 @@ class LMStudioSettings {
 			<option value="off" <?php selected( 'off', $current_reasoning ); ?>>
 				<?php echo esc_html__( 'Off', 'ai-provider-for-lmstudio' ); ?>
 			</option>
+			<option value="on" <?php selected( 'on', $current_reasoning ); ?>>
+				<?php echo esc_html__( 'On', 'ai-provider-for-lmstudio' ); ?>
+			</option>
 			<option value="low" <?php selected( 'low', $current_reasoning ); ?>>
 				<?php echo esc_html__( 'Low', 'ai-provider-for-lmstudio' ); ?>
 			</option>
@@ -306,7 +309,7 @@ class LMStudioSettings {
 		</select>
 		<p class="description">
 			<?php
-			echo esc_html__( 'Optional LM Studio reasoning mode. Example: set to Off to send reasoning="off".', 'ai-provider-for-lmstudio' );
+			echo esc_html__( 'Optional LM Studio reasoning mode. Note: some models support only On/Off; Low/Medium/High are mapped to On.', 'ai-provider-for-lmstudio' );
 			?>
 		</p>
 
@@ -443,7 +446,7 @@ class LMStudioSettings {
 
 		$reasoning = trim( (string) $settings[ self::KEY_REASONING ] );
 
-		if ( ! in_array( $reasoning, [ '', 'off', 'low', 'medium', 'high' ], true ) ) {
+		if ( ! in_array( $reasoning, [ '', 'off', 'on', 'low', 'medium', 'high' ], true ) ) {
 			return '';
 		}
 
