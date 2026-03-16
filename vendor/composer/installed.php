@@ -3,7 +3,7 @@
         'name' => 'rtcamp/ai-provider-for-lmstudio',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '3cd4785698a5ca0dbf4be43b14ac297709e2429e',
+        'reference' => 'd6fdb1262bc84c8585b020ad9add8824a52afa89',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -130,7 +130,7 @@
         'rtcamp/ai-provider-for-lmstudio' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '3cd4785698a5ca0dbf4be43b14ac297709e2429e',
+            'reference' => 'd6fdb1262bc84c8585b020ad9add8824a52afa89',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

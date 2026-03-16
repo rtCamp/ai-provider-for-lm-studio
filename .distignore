@@ -8,6 +8,7 @@
 /.eslintignore
 /.eslintrc.json
 /.gitignore
+/.distignore
 /.stylelintignore
 /.stylelintrc.json
 /.nvmrc
@@ -33,33 +34,8 @@
 # Assets source files (only include built files)
 /assets/src
 
-# Development vendor dependencies (exclude ALL except production dependencies)
-/vendor/automattic
-/vendor/dealerdirect
-/vendor/doctrine
-/vendor/myclabs
-/vendor/nikic
-/vendor/phar-io
-/vendor/php-stubs
-/vendor/phpcompatibility
-/vendor/phpcsstandards
-/vendor/phpstan
-/vendor/phpunit
-/vendor/ralouphie
-/vendor/sebastian
-/vendor/sirbrillig
-/vendor/slevomat
-/vendor/squizlabs
-/vendor/szepeviktor
-/vendor/symfony
-/vendor/theseer
-/vendor/wp-coding-standards
-/vendor/wp-phpunit
-/vendor/wpackagist-plugin
-/vendor/yoast
-/vendor/bin
-
-# All other vendor dependencies are dev-only
+# Composer dependencies are development-only for this plugin.
+/vendor
 
 # Git files
 .git
@@ -85,3 +61,7 @@ desktop.ini
 
 # Test output
 /tests/_output
+
+# Generated archives
+/ai-provider-for-lmstudio.zip
+*.zip
