@@ -120,7 +120,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$params[ $key ] = $value;
 		}
 
-		return apply_filters( 'lm_studio_text_generation_params', $params );
+		return apply_filters( 'ai_provider_for_lm_studio_text_generation_params', $params );
 	}
 
 	/**
