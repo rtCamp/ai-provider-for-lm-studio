@@ -147,32 +147,79 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 	}
 
 	/**
-	 * Converts prompt messages into a single LM Studio REST input string.
+	 * Converts prompt messages into a LM Studio REST input value.
+	 *
+	 * Returns a plain string for text-only prompts, or an array of typed content
+	 * objects when the prompt contains image parts (multimodal).
 	 *
 	 * @since 1.0.0
 	 *
 	 * @param array $prompt Prompt messages.
 	 * @phpstan-param list<Message> $prompt
-	 * @return string
+	 * @return string|array<int, array<string, string>>
 	 */
-	private function prepareInputParam( array $prompt ): string {
-		$lines = [];
-
+	private function prepareInputParam( array $prompt ): string|array {
+		// Check whether any message contains an image file part.
+		$has_images = false;
 		foreach ( $prompt as $message ) {
-			$text = $this->extractMessageText( $message );
-			if ( '' === $text ) {
-				continue;
+			foreach ( $message->getParts() as $part ) {
+				if ( $part->getType()->isFile() && $part->getFile() && $part->getFile()->isImage() ) {
+					$has_images = true;
+					break 2;
+				}
+			}
+		}
+
+		if ( ! $has_images ) {
+			// Existing text-only path: collapse all messages into a single string.
+			$lines = [];
+
+			foreach ( $prompt as $message ) {
+				$text = $this->extractMessageText( $message );
+				if ( '' === $text ) {
+					continue;
+				}
+
+				$role_prefix = $message->getRole()->isModel() ? 'Assistant' : 'User';
+				$lines[]     = $role_prefix . ': ' . $text;
 			}
 
-			$role_prefix = $message->getRole()->isModel() ? 'Assistant' : 'User';
-			$lines[]     = $role_prefix . ': ' . $text;
+			if ( 1 === count( $lines ) && str_starts_with( $lines[0], 'User: ' ) ) {
+				return substr( $lines[0], 6 );
+			}
+
+			return implode( "\n", $lines );
 		}
 
-		if ( 1 === count( $lines ) && str_starts_with( $lines[0], 'User: ' ) ) {
-			return substr( $lines[0], 6 );
+		// Multimodal path: build an array of typed content objects.
+		$content_parts = [];
+
+		foreach ( $prompt as $message ) {
+			foreach ( $message->getParts() as $part ) {
+				if ( $part->getType()->isText() ) {
+					$text = $part->getText();
+					if ( null !== $text && '' !== trim( $text ) ) {
+						$content_parts[] = [
+							'type'    => 'text',
+							'content' => $text,
+						];
+					}
+				} elseif ( $part->getType()->isFile() ) {
+					$file = $part->getFile();
+					if ( null !== $file && $file->isImage() ) {
+						$data_url = $file->isRemote() ? $file->getUrl() : $file->getDataUri();
+						if ( null !== $data_url ) {
+							$content_parts[] = [
+								'type'     => 'image',
+								'data_url' => $data_url,
+							];
+						}
+					}
+				}
+			}
 		}
 
-		return implode( "\n", $lines );
+		return $content_parts;
 	}
 
 	/**
