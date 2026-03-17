@@ -70,6 +70,11 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 
 		$models_map = [];
 		foreach ( $models_data['models'] as $model_entry ) {
+
+			if ( 'llm' !== $model_entry['type'] ) {
+				continue;
+			}
+
 			$model_name = $model_entry['key'];
 			$metadata   = $this->buildModelMetadata( $model_name, $model_entry );
 			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {

@@ -93,14 +93,6 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$params['model'] = $selected_model;
 		}
 
-		$selected_reasoning = $this->normalizeReasoningMode( LMStudioSettings::get_selected_reasoning() );
-		if ( '' !== $selected_reasoning ) {
-			$params['reasoning'] = $selected_reasoning;
-		} else {
-			// Default to "off" for LM Studio to avoid unexpected latency from on-device reasoning when users select a model that supports it without realizing.
-			$params['reasoning'] = 'off';
-		}
-
 		$max_tokens = $this->getConfig()->getMaxTokens();
 		if ( null !== $max_tokens ) {
 			$params['max_tokens'] = $max_tokens;

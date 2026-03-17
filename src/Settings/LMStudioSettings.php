@@ -86,14 +86,6 @@ class LMStudioSettings {
 			[ 'label_for' => self::OPTION_NAME . '-model' ]
 		);
 
-		add_settings_field(
-			self::OPTION_NAME . '_reasoning',
-			__( 'Reasoning', 'ai-provider-for-lmstudio' ),
-			[ $this, 'render_reasoning_field' ],
-			self::PAGE_SLUG,
-			self::SECTION_ID,
-			[ 'label_for' => self::OPTION_NAME . '-reasoning' ]
-		);
 	}
 
 	/**
@@ -126,22 +118,15 @@ class LMStudioSettings {
 
 		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
 		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$reasoning = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
 		$model     = trim( $model );
-		$reasoning = trim( $reasoning );
-
-		if ( ! in_array( $reasoning, [ '', 'off', 'on', 'low', 'medium', 'high' ], true ) ) {
-			$reasoning = '';
-		}
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
 		return [
-			'host'              => $host,
-			self::KEY_MODEL     => $model,
-			self::KEY_REASONING => $reasoning,
+			'host'          => $host,
+			self::KEY_MODEL => $model,
 		];
 	}
 
@@ -163,16 +148,6 @@ class LMStudioSettings {
 				printf(
 					/* translators: 1: code opening tag, 2: code closing tag */
 					esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'ai-provider-for-lmstudio' ),
-					'<code>',
-					'</code>'
-				);
-				?>
-			</p>
-			<p>
-				<?php
-				printf(
-					/* translators: 1: code opening tag, 2: code closing tag */
-					esc_html__( 'The provider uses LM Studio OpenAI-compatible endpoints under %1$s/v1%2$s (for example %1$s/v1/models%2$s and %1$s/v1/chat/completions%2$s).', 'ai-provider-for-lmstudio' ),
 					'<code>',
 					'</code>'
 				);
@@ -264,55 +239,6 @@ class LMStudioSettings {
 			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'ai-provider-for-lmstudio' );
 			?>
 		</p>
-		<p class="description">
-			<?php
-			echo esc_html__( 'Available models are fetched from your LM Studio server.', 'ai-provider-for-lmstudio' );
-			?>
-		</p>
-
-		<?php
-	}
-
-	/**
-	 * Renders the reasoning mode field.
-	 *
-	 * @since 1.0.0
-	 */
-	public function render_reasoning_field(): void {
-		$settings          = self::get_settings();
-		$current_reasoning = isset( $settings[ self::KEY_REASONING ] ) ? (string) $settings[ self::KEY_REASONING ] : '';
-		?>
-
-		<select
-			id="<?php echo esc_attr( self::OPTION_NAME . '-reasoning' ); ?>"
-			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
-			class="regular-text"
-		>
-			<option value="" <?php selected( '', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'Use AI Client default', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-			<option value="off" <?php selected( 'off', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'Off', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-			<option value="on" <?php selected( 'on', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'On', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-			<option value="low" <?php selected( 'low', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'Low', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-			<option value="medium" <?php selected( 'medium', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'Medium', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-			<option value="high" <?php selected( 'high', $current_reasoning ); ?>>
-				<?php echo esc_html__( 'High', 'ai-provider-for-lmstudio' ); ?>
-			</option>
-		</select>
-		<p class="description">
-			<?php
-			echo esc_html__( 'Optional LM Studio reasoning mode. Note: some models support only On/Off; Low/Medium/High are mapped to On.', 'ai-provider-for-lmstudio' );
-			?>
-		</p>
-
 		<?php
 	}
 
@@ -409,7 +335,6 @@ class LMStudioSettings {
 		return [
 			'host'              => '',
 			self::KEY_MODEL     => '',
-			self::KEY_REASONING => '',
 		];
 	}
 
@@ -428,28 +353,5 @@ class LMStudioSettings {
 		}
 
 		return trim( (string) $settings[ self::KEY_MODEL ] );
-	}
-
-	/**
-	 * Gets selected reasoning mode.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @return string Selected reasoning mode, or empty string when unset.
-	 */
-	public static function get_selected_reasoning(): string {
-		$settings = self::get_settings();
-
-		if ( ! isset( $settings[ self::KEY_REASONING ] ) ) {
-			return '';
-		}
-
-		$reasoning = trim( (string) $settings[ self::KEY_REASONING ] );
-
-		if ( ! in_array( $reasoning, [ '', 'off', 'on', 'low', 'medium', 'high' ], true ) ) {
-			return '';
-		}
-
-		return $reasoning;
 	}
 }
