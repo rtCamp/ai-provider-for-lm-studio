@@ -146,16 +146,6 @@ class LMStudioSettings {
 			<p>
 				<?php
 				printf(
-					/* translators: 1: code opening tag, 2: code closing tag */
-					esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'ai-provider-for-lmstudio' ),
-					'<code>',
-					'</code>'
-				);
-				?>
-			</p>
-			<p>
-				<?php
-				printf(
 					/* translators: 1: opening anchor tag, 2: closing anchor tag */
 					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'ai-provider-for-lmstudio' ),
 					'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '">',
@@ -197,7 +187,7 @@ class LMStudioSettings {
 			<?php
 			printf(
 				/* translators: 1: code opening tag, 2: code closing tag */
-				esc_html__( 'LM Studio server URL without a trailing slash. Example: %1$shttp://localhost:1234%2$s', 'ai-provider-for-lmstudio' ),
+				esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'ai-provider-for-lmstudio' ),
 				'<code>',
 				'</code>'
 			);
