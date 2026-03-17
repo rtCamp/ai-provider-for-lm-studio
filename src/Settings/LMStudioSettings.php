@@ -24,14 +24,13 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP  = 'ai-provider-for-lmstudio-settings';
-	private const OPTION_NAME   = 'ai_provider_for_lmstudio_settings';
-	private const PAGE_SLUG     = 'ai-provider-for-lmstudio';
-	private const SECTION_ID    = 'ai_provider_for_lmstudio_main';
-	private const AJAX_ACTION   = 'ai_provider_for_lmstudio_list_models';
-	private const NONCE_ACTION  = 'ai_provider_for_lmstudio_nonce';
-	private const KEY_MODEL     = 'model';
-	private const KEY_REASONING = 'reasoning';
+	private const OPTION_GROUP = 'ai-provider-for-lmstudio-settings';
+	private const OPTION_NAME  = 'ai_provider_for_lmstudio_settings';
+	private const PAGE_SLUG    = 'ai-provider-for-lmstudio';
+	private const SECTION_ID   = 'ai_provider_for_lmstudio_main';
+	private const AJAX_ACTION  = 'ai_provider_for_lmstudio_list_models';
+	private const NONCE_ACTION = 'ai_provider_for_lmstudio_nonce';
+	private const KEY_MODEL    = 'model';
 
 	/**
 	 * Initializes the settings.
@@ -85,7 +84,6 @@ class LMStudioSettings {
 			self::SECTION_ID,
 			[ 'label_for' => self::OPTION_NAME . '-model' ]
 		);
-
 	}
 
 	/**
@@ -116,9 +114,9 @@ class LMStudioSettings {
 			return self::get_default_settings();
 		}
 
-		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
-		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$model     = trim( $model );
+		$host  = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
+		$model = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
+		$model = trim( $model );
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
@@ -323,8 +321,8 @@ class LMStudioSettings {
 	 */
 	private static function get_default_settings(): array {
 		return [
-			'host'              => '',
-			self::KEY_MODEL     => '',
+			'host'          => '',
+			self::KEY_MODEL => '',
 		];
 	}
 

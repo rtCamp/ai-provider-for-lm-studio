@@ -21,7 +21,6 @@ use WordPress\AiClient\Providers\Models\DTO\SupportedOption;
 use WordPress\AiClient\Providers\Models\Enums\CapabilityEnum;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
 use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
-use WordPress\AiClient\Providers\Http\Exception\ResponseException;
 
 /**
  * Class for the LM Studio model metadata directory.
@@ -29,16 +28,17 @@ use WordPress\AiClient\Providers\Http\Exception\ResponseException;
  * @since 1.0.0
  *
  * @phpstan-type ModelsResponseData array{
- *     data: list<array{id: string, object?: string, owned_by?: string}>
+ *     models: list<array{type: string, object?: string, key: string, capabilities?: array{vision?: bool, trained_for_tool_use?: bool}}>
  * }
  */
 class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirectory {
 
 	/**
 	 * Sends a request to list all LM Studio models.
-	 * {@inheritDoc}
 	 *
-	 * @throws ResponseException If the API response is not successful or does not contain expected data.
+	 * @return array<string, \WordPress\AiClient\Providers\Models\DTO\ModelMetadata> Map of model ID to model metadata.
+	 *
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the API response is not successful or does not contain expected data.
 	 *
 	 * @since 1.0.0
 	 */
@@ -65,12 +65,12 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		 */
 		$models_data = $response->getData();
 		if ( ! isset( $models_data ) || ! is_array( $models_data ) ) {
-			throw ResponseException::fromMissingData( 'LM Studio', 'data' );
+			throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromMissingData( 'LM Studio', 'data' );
 		}
 
 		$models_map = [];
-		foreach ( $models_data['models'] as $model_entry ) {
 
+		foreach ( $models_data['models'] as $model_entry ) {
 			if ( 'llm' !== $model_entry['type'] ) {
 				continue;
 			}
@@ -97,16 +97,16 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param string $model_name The model name.
-	 * @param ShowResponseData|null $details The response data from /api/show, or null on failure.
-	 * @return \WordPress\AiClient\Providers\Models\DTO\ModelMetadata|null The model metadata, or null if the model should be excluded.
+	 * @param string                    $model_name The model name.
+	 * @param array<string, mixed>|null $details The response data from /api/show, or null on failure.
+	 *
+	 * @return \WordPress\AiClient\Providers\Models\DTO\ModelMetadata The model metadata.
 	 */
-	private function buildModelMetadata( string $model_name, ?array $details ): ?ModelMetadata {
+	private function buildModelMetadata( string $model_name, ?array $details ): ModelMetadata {
 		$has_vision = false;
 
 		if ( null !== $details ) {
-
-			$model_capabilities = isset( $details['capabilities'] ) ? $details['capabilities'] : array();
+			$model_capabilities = isset( $details['capabilities'] ) ? $details['capabilities'] : [];
 
 			// Check for vision support via capabilities and make sure it's set to true.
 			$has_vision = isset( $model_capabilities['vision'] ) && true === $model_capabilities['vision'];
@@ -115,19 +115,19 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		if ( $has_vision ) {
 			$input_modalities_option = new SupportedOption(
 				OptionEnum::inputModalities(),
-				array(
-					array( ModalityEnum::text() ),
-					array( ModalityEnum::text(), ModalityEnum::image() ),
-				)
+				[
+					[ ModalityEnum::text() ],
+					[ ModalityEnum::text(), ModalityEnum::image() ],
+				]
 			);
 		} else {
 			$input_modalities_option = new SupportedOption(
 				OptionEnum::inputModalities(),
-				array( array( ModalityEnum::text() ) )
+				[ [ ModalityEnum::text() ] ]
 			);
 		}
 
-		$options = array(
+		$options = [
 			new SupportedOption( OptionEnum::systemInstruction() ),
 			new SupportedOption( OptionEnum::candidateCount() ),
 			new SupportedOption( OptionEnum::maxTokens() ),
@@ -137,21 +137,21 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 			new SupportedOption( OptionEnum::stopSequences() ),
 			new SupportedOption( OptionEnum::frequencyPenalty() ),
 			new SupportedOption( OptionEnum::presencePenalty() ),
-			new SupportedOption( OptionEnum::outputMimeType(), array( 'text/plain', 'application/json' ) ),
+			new SupportedOption( OptionEnum::outputMimeType(), [ 'text/plain', 'application/json' ] ),
 			new SupportedOption( OptionEnum::outputSchema() ),
 			new SupportedOption( OptionEnum::functionDeclarations() ),
 			new SupportedOption( OptionEnum::customOptions() ),
-			new SupportedOption( OptionEnum::outputModalities(), array( array( ModalityEnum::text() ) ) ),
+			new SupportedOption( OptionEnum::outputModalities(), [ [ ModalityEnum::text() ] ] ),
 			$input_modalities_option,
-		);
+		];
 
 		return new ModelMetadata(
 			$model_name,
 			$model_name,
-			array(
+			[
 				CapabilityEnum::textGeneration(),
 				CapabilityEnum::chatHistory(),
-			),
+			],
 			$options
 		);
 	}
@@ -161,11 +161,11 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param HttpMethodEnum $method  The HTTP method.
-	 * @param string         $path    The API endpoint path.
-	 * @param array<string, string|list<string>> $headers The request headers.
-	 * @param string|array<string, mixed>|null   $data    The request data.
-	 * @return Request The request object.
+	 * @param \WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum $method  The HTTP method.
+	 * @param string                                                  $path    The API endpoint path.
+	 * @param array<string, string|list<string>>                      $headers The request headers.
+	 * @param string|array<string, mixed>|null                        $data    The request data.
+	 * @return \WordPress\AiClient\Providers\Http\DTO\Request The request object.
 	 */
 	private function createRequest( HttpMethodEnum $method, string $path, array $headers = [], $data = null ): Request {
 		return new Request(

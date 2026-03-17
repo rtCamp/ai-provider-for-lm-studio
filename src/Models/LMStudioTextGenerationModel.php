@@ -116,29 +116,6 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 	}
 
 	/**
-	 * Normalizes saved reasoning mode to values accepted by LM Studio chat API.
-	 *
-	 * Some models support only "on" and "off". Legacy values like "low",
-	 * "medium", and "high" are mapped to "on" for compatibility.
-	 *
-	 * @since 1.0.0
-	 *
-	 * @param string $reasoning Reasoning mode.
-	 * @return string
-	 */
-	private function normalizeReasoningMode( string $reasoning ): string {
-		if ( in_array( $reasoning, [ 'low', 'medium', 'high', 'on' ], true ) ) {
-			return 'on';
-		}
-
-		if ( 'off' === $reasoning ) {
-			return 'off';
-		}
-
-		return '';
-	}
-
-	/**
 	 * Converts prompt messages into a LM Studio REST input value.
 	 *
 	 * Returns a plain string for text-only prompts, or an array of typed content
