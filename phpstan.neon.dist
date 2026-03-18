@@ -19,6 +19,7 @@ parameters:
 			max: 80400
 		bootstrapFiles:
 				- ai-provider-for-lmstudio.php
+
 		paths:
 				- ai-provider-for-lmstudio.php
 				- src/
@@ -30,6 +31,3 @@ parameters:
 				- vendor/
 			analyseAndScan:
 				- node_modules (?)
-		ignoreErrors:
-				- # Too noisy for now.
-					identifier: missingType.iterableValue
