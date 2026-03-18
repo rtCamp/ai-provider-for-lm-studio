@@ -218,7 +218,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 	 *
 	 * @param \WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum $method The HTTP method.
 	 * @param string                                                  $path   The API endpoint path.
-	 * @param array                                                   $headers The request headers.
+	 * @param array<string, string>                                   $headers The request headers.
 	 * @param mixed                                                   $data   The request data.
 	 *
 	 * @return \WordPress\AiClient\Providers\Http\DTO\Request The prepared request.
