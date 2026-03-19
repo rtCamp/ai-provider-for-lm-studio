@@ -1,6 +1,6 @@
 === AI Provider for LM Studio ===
 Contributors:      rtcamp, milindmore22
-Tags:              ai, lmstudio, llm, local-ai, connector, vision
+Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0
 Stable tag:        1.0.0
