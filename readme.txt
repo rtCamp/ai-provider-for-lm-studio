@@ -20,8 +20,8 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 * LM Studio provider registration for WordPress AI Client.
 * Configure a default model for text generation from the admin settings page.
 * Automatic model discovery from your running LM Studio instance.
-* Text generation using LM Studio's REST API chat endpoint.
-* Vision / multimodal input support — send text and images to vision-capable models.
+* Text generation tasks using LM Studio's API.
+* Vision-capable models, such as those used for generating alt-text, can process both text and images.
 * Settings page under **Settings > LM Studio Settings**.
 * Works without an API key in the default local setup.
 * Extended HTTP timeout (180 s) to accommodate local model warm-up.
@@ -36,8 +36,10 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 == Screenshots ==
 
-1. LM Studio settings page showing host URL and model selection.
-2. Example of generating post content using a local LM Studio model in the WordPress editor.
+1. LM Studio provider in Connectors page showing connection status and default model.
+2. LM Studio settings page showing host URL and model selection.
+3. Example of generating post content using a local LM Studio model in the WordPress editor.
+4. Example of generating alt text for an image using a vision-capable model in LM Studio.
 
 == Frequently Asked Questions ==
 
@@ -66,11 +68,12 @@ No. LM Studio supports LLM inference only. Text-to-image (image generation) is n
 = Why does text generation sometimes time out? =
 
 Loading or warming up a large model in LM Studio can take significant time. The plugin automatically extends the HTTP timeout to 180 seconds for all requests to the configured LM Studio host to accommodate this.
-Additionally make sure to turn off thinking ability of model in LM Studio settings, as it can cause requests to hang indefinitely.
+
+Additionally make sure to turn off **thinking** ability of model in LM Studio settings, as it can cause requests to hang indefinitely.
 
 = Which models are supported? =
 
-Any LLM-type model loaded in LM Studio is supported. Embedding-only models are filtered out automatically. Vision-capable models also support image input.
+Any LLM-type model loaded in LM Studio is supported. Vision-capable models also support image input.
 
 == Changelog ==
 
