@@ -36,9 +36,9 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 == Screenshots ==
 
-1. LM Studio provider in Connectors page showing connection status and default model.
+1. LM Studio provider in Connectors page showing connection status and API Key field.
 2. LM Studio settings page showing host URL and model selection.
-3. Example of generating post content using a local LM Studio model in the WordPress editor.
+3. Example of generating post title using a local LM Studio model in the WordPress editor.
 4. Example of generating alt text for an image using a vision-capable model in LM Studio.
 
 == Frequently Asked Questions ==

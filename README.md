@@ -90,6 +90,15 @@ Navigate to **Settings > LM Studio Settings** in your WordPress admin to configu
 
 ### Configuring AI Provider for LM Studio
 
+#### Setting Up Authentication (Optional)
+
+LM Studio does not require authentication by default. If you have configured your LM Studio server to require an API token:
+
+![Screenshot-1](./wp-assets/screenshot-1.png)
+
+1. Go to **Settings > Connectors**.
+2. Enter your LM Studio API token and save.
+
 #### Setting the Host URL
 
 The plugin connects to `http://localhost:1234` by default. If your LM Studio server runs on a different address or port:
@@ -97,6 +106,8 @@ The plugin connects to `http://localhost:1234` by default. If your LM Studio ser
 1. Navigate to **Settings > LM Studio Settings**.
 2. Enter the base URL of your LM Studio server in the **Host URL** field (e.g. `http://192.168.1.10:1234`).
 3. Save your settings.
+
+![Screenshot-2](./wp-assets/screenshot-2.png)
 
 You can also override the host via the `LMSTUDIO_HOST` environment variable — this takes priority over the admin setting.
 
@@ -107,13 +118,6 @@ You can also override the host via the `LMSTUDIO_HOST` environment variable — 
 3. Select a model to use as the default for all AI Client requests routed to LM Studio.
 4. Leave the field empty to let the AI Client choose the model per request.
 5. Save your settings.
-
-#### Setting Up Authentication (Optional)
-
-LM Studio does not require authentication by default. If you have configured your LM Studio server to require an API token:
-
-1. Go to **Settings > Connectors**.
-2. Enter your LM Studio API token and save.
 
 ### Text Generation
 
@@ -131,6 +135,8 @@ $result = Prompt_Builder::create()
 #### WordPress Ability
 
 You can use LM Studio for any WordPress AI Client feature that supports text generation, such as:
+
+![Screenshot-3](./wp-assets/screenshot-3.png)
 
 - Title generation
 - Excerpt generation
@@ -150,6 +156,14 @@ $result = Prompt_Builder::create()
     ->add_image_from_url( 'https://example.com/photo.jpg' )
     ->generate_text();
 ```
+
+#### WordPress Ability
+You can use LM Studio's vision capabilities in any WordPress AI Client feature that supports image input, such as:
+
+![Screenshot-4](./wp-assets/screenshot-4.png)
+
+- Alt text generation
+- Image captioning / analysis
 
 ### Environment Overrides
 
