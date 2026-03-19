@@ -33,6 +33,7 @@
 
 # Assets source files (only include built files)
 /assets/src
+/wp-assets
 
 # Composer dependencies are development-only for this plugin.
 /vendor
