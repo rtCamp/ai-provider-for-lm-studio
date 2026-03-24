@@ -1,5 +1,5 @@
 === Connector for LM Studio ===
-Contributors:      rtcamp, milindmore22
+Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmittal89
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0

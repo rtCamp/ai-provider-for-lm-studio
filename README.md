@@ -1,6 +1,6 @@
 # Connector for LM Studio - Run Local AI Models in WordPress
 
-**Contributors:** [rtCamp](https://profiles.wordpress.org/rtcamp/), [milindmore22](https://profiles.wordpress.org/milindmore22)
+**Contributors:** [rtCamp](https://profiles.wordpress.org/rtcamp/), [milindmore22](https://profiles.wordpress.org/milindmore22), [vishal4669](https://profiles.wordpress.org/vishal4669/), [aviralmittal89](https://profiles.wordpress.org/aviralmittal89/)
 
 **Tags:** WordPress, AI, LM Studio, Local AI, Text Generation, Vision, Language Models, Self-hosted
 
