@@ -2,14 +2,14 @@
 /**
  * LM Studio Text Generation Model.
  *
- * @package rtcamp/ai-provider-for-lmstudio
+ * @package rtcamp/connector-for-lmstudio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\AiProviderForLMStudio\Models;
+namespace rtCamp\ConnectorForLMStudio\Models;
 
 use WordPress\AiClient\Messages\DTO\Message;
 use WordPress\AiClient\Messages\DTO\MessagePart;
@@ -25,8 +25,8 @@ use WordPress\AiClient\Results\DTO\Candidate;
 use WordPress\AiClient\Results\DTO\GenerativeAiResult;
 use WordPress\AiClient\Results\DTO\TokenUsage;
 use WordPress\AiClient\Results\Enums\FinishReasonEnum;
-use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
-use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
+use rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider;
+use rtCamp\ConnectorForLMStudio\Settings\LMStudioSettings;
 
 /**
  * Class for an LM Studio text generation model.
@@ -112,7 +112,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$params[ $key ] = $value;
 		}
 
-		return apply_filters( 'ai_provider_for_lm_studio_text_generation_params', $params );
+		return apply_filters( 'connector_for_lm_studio_text_generation_params', $params );
 	}
 
 	/**

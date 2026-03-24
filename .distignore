@@ -64,5 +64,5 @@ desktop.ini
 /tests/_output
 
 # Generated archives
-/ai-provider-for-lmstudio.zip
+/connector-for-lmstudio.zip
 *.zip

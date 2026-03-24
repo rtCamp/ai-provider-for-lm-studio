@@ -17,7 +17,7 @@
 	}
 
 	function renderModels( models, selectedModel ) {
-		const select = document.getElementById( 'ai_provider_for_lmstudio_settings-model' );
+		const select = document.getElementById( 'connector_for_lmstudio_settings-model' );
 		const status = document.getElementById( 'lmstudio-model-status' );
 
 		if ( ! select || ! status ) {
@@ -120,13 +120,13 @@
 	}
 
 	document.addEventListener( 'DOMContentLoaded', function() {
-		if ( ! window.aiProviderForLMStudioSettings || ! window.aiProviderForLMStudioSettings.ajaxUrl ) {
+		if ( ! window.ConnectorForLMStudioSettings || ! window.ConnectorForLMStudioSettings.ajaxUrl ) {
 			return;
 		}
 
 		loadModels(
-			window.aiProviderForLMStudioSettings.ajaxUrl,
-			window.aiProviderForLMStudioSettings.selectedModel || '',
+			window.ConnectorForLMStudioSettings.ajaxUrl,
+			window.ConnectorForLMStudioSettings.selectedModel || '',
 		);
 	} );
 }() );

@@ -2,14 +2,14 @@
 /**
  * LM Studio Settings.
  *
- * @package rtcamp/ai-provider-for-lmstudio
+ * @package rtcamp/connector-for-lmstudio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\AiProviderForLMStudio\Settings;
+namespace rtCamp\ConnectorForLMStudio\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,12 +24,12 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP = 'ai-provider-for-lmstudio-settings';
-	private const OPTION_NAME  = 'ai_provider_for_lmstudio_settings';
-	private const PAGE_SLUG    = 'ai-provider-for-lmstudio';
-	private const SECTION_ID   = 'ai_provider_for_lmstudio_main';
-	private const AJAX_ACTION  = 'ai_provider_for_lmstudio_list_models';
-	private const NONCE_ACTION = 'ai_provider_for_lmstudio_nonce';
+	private const OPTION_GROUP = 'connector-for-lmstudio-settings';
+	private const OPTION_NAME  = 'connector_for_lmstudio_settings';
+	private const PAGE_SLUG    = 'connector-for-lmstudio';
+	private const SECTION_ID   = 'connector_for_lmstudio_main';
+	private const AJAX_ACTION  = 'connector_for_lmstudio_list_models';
+	private const NONCE_ACTION = 'connector_for_lmstudio_nonce';
 	private const KEY_MODEL    = 'model';
 
 	/**
@@ -69,7 +69,7 @@ class LMStudioSettings {
 
 		add_settings_field(
 			self::OPTION_NAME . '_host',
-			__( 'Host URL', 'ai-provider-for-lmstudio' ),
+			__( 'Host URL', 'connector-for-lmstudio' ),
 			[ $this, 'render_host_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
@@ -78,7 +78,7 @@ class LMStudioSettings {
 
 		add_settings_field(
 			self::OPTION_NAME . '_model',
-			__( 'Available Models', 'ai-provider-for-lmstudio' ),
+			__( 'Available Models', 'connector-for-lmstudio' ),
 			[ $this, 'render_available_models_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
@@ -93,8 +93,8 @@ class LMStudioSettings {
 	 */
 	public function register_settings_screen(): void {
 		add_options_page(
-			__( 'LM Studio Settings', 'ai-provider-for-lmstudio' ),
-			__( 'LM Studio Settings', 'ai-provider-for-lmstudio' ),
+			__( 'LM Studio Settings', 'connector-for-lmstudio' ),
+			__( 'LM Studio Settings', 'connector-for-lmstudio' ),
 			'manage_options',
 			self::PAGE_SLUG,
 			[ $this, 'render_screen' ]
@@ -145,7 +145,7 @@ class LMStudioSettings {
 				<?php
 				printf(
 					/* translators: 1: opening anchor tag, 2: closing anchor tag */
-					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'ai-provider-for-lmstudio' ),
+					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
 					'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '">',
 					'</a>'
 				);
@@ -185,7 +185,7 @@ class LMStudioSettings {
 			<?php
 			printf(
 				/* translators: 1: code opening tag, 2: code closing tag */
-				esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'ai-provider-for-lmstudio' ),
+				esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'connector-for-lmstudio' ),
 				'<code>',
 				'</code>'
 			);
@@ -212,7 +212,7 @@ class LMStudioSettings {
 				class="regular-text"
 			>
 				<option value="">
-					<?php echo esc_html__( 'Use model selected by AI Client', 'ai-provider-for-lmstudio' ); ?>
+					<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
 				</option>
 				<?php if ( '' !== $current_model ) : ?>
 					<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
@@ -224,7 +224,7 @@ class LMStudioSettings {
 		</div>
 		<p class="description">
 			<?php
-			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'ai-provider-for-lmstudio' );
+			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'connector-for-lmstudio' );
 			?>
 		</p>
 		<?php
@@ -243,16 +243,16 @@ class LMStudioSettings {
 		}
 
 		wp_enqueue_script(
-			'ai-provider-for-lmstudio-settings',
-			plugins_url( 'assets/settings-models.js', AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ),
+			'connector-for-lmstudio-settings',
+			plugins_url( 'assets/settings-models.js', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
 			[],
 			'1.0.0',
 			true
 		);
 
 		wp_localize_script(
-			'ai-provider-for-lmstudio-settings',
-			'aiProviderForLMStudioSettings',
+			'connector-for-lmstudio-settings',
+			'ConnectorForLMStudioSettings',
 			[
 				'ajaxUrl'       => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
 				'selectedModel' => self::get_selected_model(),
@@ -269,14 +269,14 @@ class LMStudioSettings {
 		check_ajax_referer( self::NONCE_ACTION );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'ai-provider-for-lmstudio' ), 403 );
+			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
 		}
 
 		$provider_id = 'lmstudio';
 		$registry    = AiClient::defaultRegistry();
 
 		if ( ! $registry->hasProvider( $provider_id ) ) {
-			wp_send_json_error( __( 'AI provider not found.', 'ai-provider-for-lmstudio' ), 404 );
+			wp_send_json_error( __( 'AI provider not found.', 'connector-for-lmstudio' ), 404 );
 		}
 
 		$provider_classname = $registry->getProviderClassName( $provider_id );
@@ -285,7 +285,7 @@ class LMStudioSettings {
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$provider_availability = $provider_classname::availability();
 			if ( ! $provider_availability->isConfigured() ) {
-				wp_send_json_error( __( 'AI provider not configured - missing API credentials.', 'ai-provider-for-lmstudio' ), 400 );
+				wp_send_json_error( __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ), 400 );
 			}
 
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -295,7 +295,7 @@ class LMStudioSettings {
 			wp_send_json_success( $model_metadata_objects );
 		} catch ( \Throwable $e ) {
 			/* translators: %s: Error message. */
-			wp_send_json_error( sprintf( __( 'Could not list models for provider. Error: %s', 'ai-provider-for-lmstudio' ), $e->getMessage() ), 500 );
+			wp_send_json_error( sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ), 500 );
 		}
 	}
 

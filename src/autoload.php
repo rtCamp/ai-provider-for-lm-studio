@@ -4,7 +4,7 @@
  *
  * @since 1.0.0
  *
- * @package rtCamp\AiProviderForLMStudio
+ * @package rtCamp\ConnectorForLMStudio
  */
 
 declare( strict_types=1 );
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 spl_autoload_register(
 	static function ( string $class_name ): void {
-		$prefix   = 'rtCamp\\AiProviderForLMStudio\\';
+		$prefix   = 'rtCamp\\ConnectorForLMStudio\\';
 		$base_dir = __DIR__ . '/';
 
 		$len = strlen( $prefix );

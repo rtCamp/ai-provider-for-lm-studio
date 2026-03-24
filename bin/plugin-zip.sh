@@ -2,7 +2,7 @@
 
 set -eu
 
-plugin_slug="ai-provider-for-lmstudio"
+plugin_slug="connector-for-lmstudio"
 plugin_root=$(pwd)
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/${plugin_slug}.XXXXXX")
 staging_dir="$work_dir/$plugin_slug"

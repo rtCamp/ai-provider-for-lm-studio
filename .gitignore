@@ -35,7 +35,7 @@ phpstan.neon
 
 # Build
 build/
-ai-provider-for-lmstudio.zip
+connector-for-lmstudio.zip
 
 # TSConfig cache
 tsconfig.tsbuildinfo

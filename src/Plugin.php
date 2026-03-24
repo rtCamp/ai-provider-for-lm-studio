@@ -3,12 +3,12 @@
  * The main plugin class.
  *
  * @since 1.0.0
- * @package rtcamp/ai-provider-for-lmstudio
+ * @package rtcamp/connector-for-lmstudio
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\AiProviderForLMStudio;
+namespace rtCamp\ConnectorForLMStudio;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WordPress\AiClient\AiClient;
 use WordPress\AiClient\Providers\Http\DTO\ApiKeyRequestAuthentication;
-use rtCamp\AiProviderForLMStudio\Provider\LMStudioProvider;
-use rtCamp\AiProviderForLMStudio\Settings\LMStudioSettings;
+use rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider;
+use rtCamp\ConnectorForLMStudio\Settings\LMStudioSettings;
 
 /**
  * Plugin class.
@@ -35,7 +35,7 @@ class Plugin {
 		add_action( 'init', [ $this, 'register_provider' ], 5 );
 		add_action( 'init', [ $this, 'register_fallback_auth' ], 15 );
 		add_action( 'init', [ $this, 'initialize_settings' ] );
-		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ), [ $this, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . plugin_basename( CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ), [ $this, 'plugin_action_links' ] );
 		add_filter( 'http_request_host_is_external', [ $this, 'allow_localhost_requests' ], 10, 3 );
 		add_filter( 'http_allowed_safe_ports', [ $this, 'allow_lmstudio_ports' ] );
 		// phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Scoped to the configured LM Studio host to support local model inference.
@@ -133,8 +133,8 @@ class Plugin {
 	public function plugin_action_links( array $links ): array {
 		$settings_link = sprintf(
 			'<a href="%1$s">%2$s</a>',
-			admin_url( 'options-general.php?page=ai-provider-for-lmstudio' ),
-			esc_html__( 'Settings', 'ai-provider-for-lmstudio' )
+			admin_url( 'options-general.php?page=connector-for-lmstudio' ),
+			esc_html__( 'Settings', 'connector-for-lmstudio' )
 		);
 
 		array_unshift( $links, $settings_link );

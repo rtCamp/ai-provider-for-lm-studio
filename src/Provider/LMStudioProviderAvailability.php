@@ -2,14 +2,14 @@
 /**
  * LM Studio Provider Availability.
  *
- * @package rtcamp/ai-provider-for-lmstudio
+ * @package rtcamp/connector-for-lmstudio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\AiProviderForLMStudio\Provider;
+namespace rtCamp\ConnectorForLMStudio\Provider;
 
 use WordPress\AiClient\Providers\Contracts\ProviderAvailabilityInterface;
 

@@ -1,9 +1,9 @@
 {
-	"name": "ai-provider-for-lmstudio",
+	"name": "connector-for-lmstudio",
 	"private": true,
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/milindmore22/ai-provider-for-lmstudio.git"
+		"url": "https://github.com/rtcamp/connector-for-lmstudio.git"
 	},
 	"engines": {
 		"node": ">=22.0.0",
