@@ -227,6 +227,12 @@ class LMStudioSettings {
 			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'connector-for-lmstudio' );
 			?>
 		</p>
+		<hr/>
+		<p class="description" style="font-style: italic;">
+			<?php
+			echo esc_html__( 'Connect to LM Studio remotely by using LM Link, or expose it to the web with free tunnels like ngrok or localtunnel. Always secure your endpoints by requiring API keys for authentication.', 'connector-for-lmstudio' );
+			?>
+		</p>
 		<?php
 	}
 
