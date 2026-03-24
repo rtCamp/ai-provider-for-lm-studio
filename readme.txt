@@ -1,4 +1,4 @@
-=== AI Provider for LM Studio ===
+=== Connector for LM Studio ===
 Contributors:      rtcamp, milindmore22
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
@@ -9,7 +9,7 @@ Requires Plugins:  ai
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
-LM Studio provider for the WordPress AI Client.
+Connector for LM Studio for the WordPress AI Client.
 
 == Description ==
 
@@ -17,7 +17,7 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 **Features:**
 
-* LM Studio provider registration for WordPress AI Client.
+* Connector for LM Studio registration for WordPress AI Client.
 * Configure a default model for text generation from the admin settings page.
 * Automatic model discovery from your running LM Studio instance.
 * Text generation tasks using LM Studio's API.
@@ -29,8 +29,8 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 == Installation ==
 
 1. Ensure the WordPress AI plugin is installed and activated.
-2. Upload plugin files to `/wp-content/plugins/ai-provider-for-lmstudio/`.
-3. Activate plugin through the Plugins menu in WordPress.
+2. Upload plugin files to `/wp-content/plugins/connector-for-lmstudio/`.
+3. Activate **Connector for LM Studio** through the Plugins menu in WordPress.
 4. Start LM Studio and load a model.
 5. Configure the host URL and default model in **Settings > LM Studio Settings**.
 
@@ -45,7 +45,7 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 = Do I need an API key? =
 
-Not by default. LM Studio local server can run without authentication.
+Not by default. Connector for LM Studio local server can run without authentication.
 
 If your LM Studio server is configured with API token authentication, set the token in **Settings > Connectors**.
 
@@ -79,7 +79,7 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 
 = 1.0.0 =
 
-* Initial release of the LM Studio provider plugin.
+* Initial release of the Connector for LM Studio plugin.
 * LM Studio REST API model discovery and text generation support.
 * Multimodal (vision) input support for vision-capable models.
 * Admin settings page for host URL and default model configuration.
@@ -92,7 +92,7 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 Initial release.
 
 * Initial release
-* LM Studio OpenAI-compatible model discovery and chat completions support
+* Connector for LM Studio OpenAI-compatible model discovery and chat completions support
 
 == Upgrade Notice ==
 

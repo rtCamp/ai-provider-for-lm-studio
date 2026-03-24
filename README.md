@@ -1,4 +1,4 @@
-# AI Provider for LM Studio - Run Local AI Models in WordPress
+# Connector for LM Studio - Run Local AI Models in WordPress
 
 **Contributors:** [rtCamp](https://profiles.wordpress.org/rtcamp/), [milindmore22](https://profiles.wordpress.org/milindmore22)
 
@@ -8,11 +8,11 @@ This plugin is licensed under the GPL v2 or later.
 
 ## Overview
 
-AI Provider for LM Studio is a WordPress plugin that registers [LM Studio](https://lmstudio.ai/) as an AI provider for the WordPress AI Client. It lets you run AI inference entirely on your own machine — no cloud account or API key required.
+Connector for LM Studio is a WordPress plugin that registers [LM Studio](https://lmstudio.ai/) as an AI provider for the WordPress AI Client. It lets you run AI inference entirely on your own machine — no cloud account or API key required.
 
 ## Description
 
-**AI Provider for LM Studio** bridges the WordPress AI Client with LM Studio's local REST API, allowing you to:
+**Connector for LM Studio** bridges the WordPress AI Client with LM Studio's local REST API, allowing you to:
 
 * **Run AI models locally** — no data leaves your machine
 * **Generate text** using any LLM loaded in LM Studio
@@ -22,7 +22,7 @@ AI Provider for LM Studio is a WordPress plugin that registers [LM Studio](https
 
 This makes it simple to integrate powerful, locally-hosted language models into your WordPress site while keeping full control over your data and infrastructure.
 
-## Why AI Provider for LM Studio?
+## Why Connector for LM Studio?
 
 Many teams need AI features without sending data to external services — for compliance, privacy, or cost reasons. Running models locally with LM Studio solves this but requires gluing together the LM Studio server with WordPress. This plugin handles that integration by:
 
@@ -71,24 +71,24 @@ The plugin communicates with LM Studio's REST API:
 ### As a WordPress Plugin
 
 1. Ensure the **AI Experiments** plugin (`ai`) is installed and activated.
-2. Download or clone this plugin into `wp-content/plugins/ai-provider-for-lmstudio`.
-3. Activate **AI Provider for LM Studio** from the Plugins screen.
+2. Download or clone this plugin into `wp-content/plugins/connector-for-lmstudio`.
+3. Activate **Connector for LM Studio** from the Plugins screen.
 4. Start LM Studio and load a model.
 5. Optionally configure the host URL and default model in **Settings > LM Studio Settings**.
 
 ### As a Composer Package
 
 ```bash
-composer require rtcamp/ai-provider-for-lmstudio
+composer require rtcamp/connector-for-lmstudio
 ```
 
 ## Usage Guide
 
 ### Accessing the Settings
 
-Navigate to **Settings > LM Studio Settings** in your WordPress admin to configure AI Provider for LM Studio.
+Navigate to **Settings > LM Studio Settings** in your WordPress admin to configure Connector for LM Studio.
 
-### Configuring AI Provider for LM Studio
+### Configuring Connector for LM Studio
 
 #### Setting Up Authentication (Optional)
 
@@ -134,7 +134,7 @@ $result = Prompt_Builder::create()
 
 #### WordPress Ability
 
-You can use LM Studio for any WordPress AI Client feature that supports text generation, such as:
+You can use Connector for LM Studio for any WordPress AI Client feature that supports text generation, such as:
 
 ![Screenshot-3](./wp-assets/screenshot-3.png)
 
@@ -158,7 +158,7 @@ $result = Prompt_Builder::create()
 ```
 
 #### WordPress Ability
-You can use LM Studio's vision capabilities in any WordPress AI Client feature that supports image input, such as:
+You can use Connector for LM Studio's vision capabilities in any WordPress AI Client feature that supports image input, such as:
 
 ![Screenshot-4](./wp-assets/screenshot-4.png)
 
@@ -173,9 +173,9 @@ For advanced deployments, override defaults using PHP constants or environment v
 
 ## Development & Contributing
 
-AI Provider for LM Studio is actively developed and maintained by [rtCamp](https://rtcamp.com/).
+Connector for LM Studio is actively developed and maintained by [rtCamp](https://rtcamp.com/).
 
-- **Repository:** [https://github.com/rtcamp/ai-provider-for-lmstudio](https://github.com/rtcamp/ai-provider-for-lmstudio)
+- **Repository:** [https://github.com/rtcamp/connector-for-lmstudio](https://github.com/rtcamp/connector-for-lmstudio)
 
 We welcome contributions! Please open an issue or pull request on GitHub.
 
@@ -206,7 +206,7 @@ npm run lint
 npm run plugin-zip
 ```
 
-This creates `ai-provider-for-lmstudio.zip` in the plugin root, excluding all development-only files.
+This creates `connector-for-lmstudio.zip` in the plugin root, excluding all development-only files.
 
 ## Frequently Asked Questions
 
@@ -220,7 +220,7 @@ No. LM Studio does not require authentication by default. If you have enabled au
 
 ### Does this plugin require the WordPress AI Client plugin?
 
-Yes. The **WordPress AI** plugin (`ai`) must be installed and activated. This plugin registers LM Studio as a provider within that framework.
+Yes. The **WordPress AI** plugin (`ai`) must be installed and activated. This plugin registers Connector for LM Studio as a provider within that framework.
 
 ### Does LM Studio need to be running for the plugin to work?
 
@@ -275,8 +275,8 @@ The plugin can be network-activated on multisite. Each site's settings are manag
   
 ## Support & Community
 
-- **Issues & Bug Reports:** [GitHub Issues](https://github.com/rtcamp/ai-provider-for-lmstudio/issues)
-- **Source Code:** [GitHub Repository](https://github.com/rtcamp/ai-provider-for-lmstudio)
+- **Issues & Bug Reports:** [GitHub Issues](https://github.com/rtcamp/connector-for-lmstudio/issues)
+- **Source Code:** [GitHub Repository](https://github.com/rtcamp/connector-for-lmstudio)
 
 ## License
 
