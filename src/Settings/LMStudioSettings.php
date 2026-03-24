@@ -230,7 +230,7 @@ class LMStudioSettings {
 		<hr/>
 		<p class="description" style="font-style: italic;">
 			<?php
-			echo esc_html__( 'Connect to LM Studio remotely by using LM Link, or expose it to the web with free tunnels like ngrok or localtunnel. Always secure your endpoints by requiring API keys for authentication.', 'connector-for-lmstudio' );
+			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
 			?>
 		</p>
 		<?php
