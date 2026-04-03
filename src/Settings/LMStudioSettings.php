@@ -24,13 +24,16 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP = 'connector-for-lmstudio-settings';
-	private const OPTION_NAME  = 'connector_for_lmstudio_settings';
-	private const PAGE_SLUG    = 'connector-for-lmstudio';
-	private const SECTION_ID   = 'connector_for_lmstudio_main';
-	private const AJAX_ACTION  = 'connector_for_lmstudio_list_models';
-	private const NONCE_ACTION = 'connector_for_lmstudio_nonce';
-	private const KEY_MODEL    = 'model';
+	private const OPTION_GROUP              = 'connector-for-lmstudio-settings';
+	private const OPTION_NAME               = 'connector_for_lmstudio_settings';
+	private const PAGE_SLUG                 = 'connector-for-lmstudio';
+	private const SECTION_ID                = 'connector_for_lmstudio_main';
+	private const AJAX_ACTION               = 'connector_for_lmstudio_list_models';
+	private const NONCE_ACTION              = 'connector_for_lmstudio_nonce';
+	private const AJAX_ACTION_CAPABILITIES  = 'connector_for_lmstudio_model_capabilities';
+	private const NONCE_ACTION_CAPABILITIES = 'connector_for_lmstudio_capabilities_nonce';
+	private const KEY_MODEL                 = 'model';
+	private const KEY_REASONING             = 'reasoning';
 
 	/**
 	 * Initializes the settings.
@@ -42,6 +45,7 @@ class LMStudioSettings {
 		add_action( 'admin_menu', [ $this, 'register_settings_screen' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_settings_script' ] );
 		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_list_models' ] );
+		add_action( 'wp_ajax_' . self::AJAX_ACTION_CAPABILITIES, [ $this, 'ajax_model_capabilities' ] );
 	}
 
 	/**
@@ -84,6 +88,14 @@ class LMStudioSettings {
 			self::SECTION_ID,
 			[ 'label_for' => self::OPTION_NAME . '-model' ]
 		);
+
+		add_settings_field(
+			self::OPTION_NAME . '_reasoning',
+			__( 'Reasoning', 'connector-for-lmstudio' ),
+			[ $this, 'render_reasoning_field' ],
+			self::PAGE_SLUG,
+			self::SECTION_ID
+		);
 	}
 
 	/**
@@ -114,17 +126,20 @@ class LMStudioSettings {
 			return self::get_default_settings();
 		}
 
-		$host  = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
-		$model = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$model = trim( $model );
+		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
+		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
+		$model     = trim( $model );
+		$reasoning = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
+		$reasoning = trim( $reasoning );
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
 		return [
-			'host'          => $host,
-			self::KEY_MODEL => $model,
+			'host'              => $host,
+			self::KEY_MODEL     => $model,
+			self::KEY_REASONING => $reasoning,
 		];
 	}
 
@@ -227,12 +242,6 @@ class LMStudioSettings {
 			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'connector-for-lmstudio' );
 			?>
 		</p>
-		<hr/>
-		<p class="description" style="font-style: italic;">
-			<?php
-			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
-			?>
-		</p>
 		<?php
 	}
 
@@ -260,8 +269,10 @@ class LMStudioSettings {
 			'connector-for-lmstudio-settings',
 			'ConnectorForLMStudioSettings',
 			[
-				'ajaxUrl'       => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
-				'selectedModel' => self::get_selected_model(),
+				'ajaxUrl'             => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
+				'capabilitiesAjaxUrl' => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION_CAPABILITIES . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION_CAPABILITIES ) ),
+				'selectedModel'       => self::get_selected_model(),
+				'selectedReasoning'   => self::get_selected_reasoning(),
 			]
 		);
 	}
@@ -327,8 +338,9 @@ class LMStudioSettings {
 	 */
 	private static function get_default_settings(): array {
 		return [
-			'host'          => '',
-			self::KEY_MODEL => '',
+			'host'              => '',
+			self::KEY_MODEL     => '',
+			self::KEY_REASONING => '',
 		];
 	}
 
@@ -347,5 +359,134 @@ class LMStudioSettings {
 		}
 
 		return trim( (string) $settings[ self::KEY_MODEL ] );
+	}
+
+	/**
+	 * Renders the reasoning field.
+	 *
+	 * Shows a hidden input (persisted via form submit) plus a JS-populated
+	 * fieldset of radio buttons that appears only when the selected model
+	 * reports reasoning capabilities.
+	 *
+	 * @since 1.0.0
+	 */
+	public function render_reasoning_field(): void {
+		$settings          = self::get_settings();
+		$current_reasoning = isset( $settings[ self::KEY_REASONING ] ) ? (string) $settings[ self::KEY_REASONING ] : '';
+		?>
+		<div id="lmstudio-reasoning-container" style="display:none;">
+			<fieldset id="lmstudio-reasoning-fieldset" style="border:0;margin:0;padding:0;">
+				<legend class="screen-reader-text">
+					<?php esc_html_e( 'Reasoning', 'connector-for-lmstudio' ); ?>
+				</legend>
+				<!-- Radio buttons injected by settings-models.js -->
+			</fieldset>
+			<p class="description">
+				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
+			</p>
+		</div>
+		<input
+			type="hidden"
+			id="<?php echo esc_attr( self::OPTION_NAME . '-reasoning' ); ?>"
+			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
+			value="<?php echo esc_attr( $current_reasoning ); ?>"
+		/>
+		<hr/>
+		<p class="description" style="font-style: italic;">
+			<?php
+			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
+			?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Handles the AJAX request to return per-model reasoning capabilities.
+	 *
+	 * Queries the LM Studio /api/v1/models endpoint directly and returns a map
+	 * of model key → reasoning capability object.
+	 *
+	 * @since 1.0.0
+	 */
+	public function ajax_model_capabilities(): void {
+		check_ajax_referer( self::NONCE_ACTION_CAPABILITIES );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
+		}
+
+		$url = \rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+		$response = wp_remote_get(
+			$url,
+			[
+				'sslverify' => false,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( $response->get_error_message(), 500 );
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( ! is_array( $data ) || ! isset( $data['models'] ) || ! is_array( $data['models'] ) ) {
+			wp_send_json_error( __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ), 500 );
+		}
+
+		$capabilities_map = [];
+
+		foreach ( $data['models'] as $model ) {
+			if ( ! is_array( $model ) || ! isset( $model['key'] ) || ! isset( $model['type'] ) || 'llm' !== $model['type'] ) {
+				continue;
+			}
+
+			$model_key = $model['key'];
+			$reasoning = null;
+
+			if (
+				isset( $model['capabilities']['reasoning'] ) &&
+				is_array( $model['capabilities']['reasoning'] ) &&
+				isset( $model['capabilities']['reasoning']['allowed_options'] ) &&
+				is_array( $model['capabilities']['reasoning']['allowed_options'] ) &&
+				! empty( $model['capabilities']['reasoning']['allowed_options'] )
+			) {
+				$raw       = $model['capabilities']['reasoning'];
+				$allowed   = array_values(
+					array_filter(
+						$raw['allowed_options'],
+						'is_string'
+					)
+				);
+				$default   = isset( $raw['default'] ) && is_string( $raw['default'] ) ? $raw['default'] : '';
+				$reasoning = [
+					'allowed_options' => $allowed,
+					'default'         => $default,
+				];
+			}
+
+			$capabilities_map[ $model_key ] = [ 'reasoning' => $reasoning ];
+		}
+
+		wp_send_json_success( $capabilities_map );
+	}
+
+	/**
+	 * Gets the saved reasoning setting.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return string Reasoning value (e.g. 'on', 'off'), or empty string when unset.
+	 */
+	public static function get_selected_reasoning(): string {
+		$settings = self::get_settings();
+
+		if ( ! isset( $settings[ self::KEY_REASONING ] ) ) {
+			return '';
+		}
+
+		return trim( (string) $settings[ self::KEY_REASONING ] );
 	}
 }

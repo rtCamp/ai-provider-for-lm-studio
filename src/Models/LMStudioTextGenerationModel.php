@@ -103,6 +103,11 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$params['temperature'] = $temperature;
 		}
 
+		$reasoning = LMStudioSettings::get_selected_reasoning();
+		if ( '' !== $reasoning ) {
+			$params['reasoning'] = $reasoning;
+		}
+
 		$custom_options = $this->getConfig()->getCustomOptions();
 		foreach ( $custom_options as $key => $value ) {
 			if ( isset( $params[ $key ] ) ) {
