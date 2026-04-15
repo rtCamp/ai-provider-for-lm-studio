@@ -126,11 +126,29 @@ class LMStudioSettings {
 			return self::get_default_settings();
 		}
 
-		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
-		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$model     = trim( $model );
-		$reasoning = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
-		$reasoning = trim( $reasoning );
+		$host               = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
+		$model              = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
+		$model              = trim( $model );
+		$reasoning_by_model = [];
+
+		if ( isset( $value[ self::KEY_REASONING ] ) && is_array( $value[ self::KEY_REASONING ] ) ) {
+			foreach ( $value[ self::KEY_REASONING ] as $model_key => $reasoning_value ) {
+				$model_key       = trim( sanitize_text_field( (string) $model_key ) );
+				$reasoning_value = trim( sanitize_text_field( (string) $reasoning_value ) );
+
+				if ( '' === $model_key || '' === $reasoning_value ) {
+					continue;
+				}
+
+				$reasoning_by_model[ $model_key ] = $reasoning_value;
+			}
+		} elseif ( isset( $value[ self::KEY_REASONING ] ) && is_string( $value[ self::KEY_REASONING ] ) ) {
+			// Backward compatibility for older single-value reasoning setting.
+			$legacy_reasoning = trim( sanitize_text_field( $value[ self::KEY_REASONING ] ) );
+			if ( '' !== $model && '' !== $legacy_reasoning ) {
+				$reasoning_by_model[ $model ] = $legacy_reasoning;
+			}
+		}
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
@@ -139,7 +157,7 @@ class LMStudioSettings {
 		return [
 			'host'              => $host,
 			self::KEY_MODEL     => $model,
-			self::KEY_REASONING => $reasoning,
+			self::KEY_REASONING => $reasoning_by_model,
 		];
 	}
 
@@ -273,6 +291,7 @@ class LMStudioSettings {
 				'capabilitiesAjaxUrl' => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION_CAPABILITIES . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION_CAPABILITIES ) ),
 				'selectedModel'       => self::get_selected_model(),
 				'selectedReasoning'   => self::get_selected_reasoning(),
+				'selectedReasoningByModel' => self::get_reasoning_by_model(),
 			]
 		);
 	}
@@ -340,7 +359,7 @@ class LMStudioSettings {
 		return [
 			'host'              => '',
 			self::KEY_MODEL     => '',
-			self::KEY_REASONING => '',
+			self::KEY_REASONING => [],
 		];
 	}
 
@@ -371,8 +390,6 @@ class LMStudioSettings {
 	 * @since 1.0.0
 	 */
 	public function render_reasoning_field(): void {
-		$settings          = self::get_settings();
-		$current_reasoning = isset( $settings[ self::KEY_REASONING ] ) ? (string) $settings[ self::KEY_REASONING ] : '';
 		?>
 		<div id="lmstudio-reasoning-container" style="display:none;">
 			<fieldset id="lmstudio-reasoning-fieldset" style="border:0;margin:0;padding:0;">
@@ -385,12 +402,7 @@ class LMStudioSettings {
 				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
 			</p>
 		</div>
-		<input
-			type="hidden"
-			id="<?php echo esc_attr( self::OPTION_NAME . '-reasoning' ); ?>"
-			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
-			value="<?php echo esc_attr( $current_reasoning ); ?>"
-		/>
+		<div id="lmstudio-reasoning-hidden-inputs"></div>
 		<hr/>
 		<p class="description" style="font-style: italic;">
 			<?php
@@ -474,19 +486,58 @@ class LMStudioSettings {
 	}
 
 	/**
-	 * Gets the saved reasoning setting.
+	 * Gets saved per-model reasoning settings.
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return string Reasoning value (e.g. 'on', 'off'), or empty string when unset.
+	 * @return array<string, string> Model ID to reasoning option map.
 	 */
-	public static function get_selected_reasoning(): string {
+	public static function get_reasoning_by_model(): array {
 		$settings = self::get_settings();
 
 		if ( ! isset( $settings[ self::KEY_REASONING ] ) ) {
+			return [];
+		}
+
+		if ( ! is_array( $settings[ self::KEY_REASONING ] ) ) {
+			return [];
+		}
+
+		$reasoning_by_model = [];
+
+		foreach ( $settings[ self::KEY_REASONING ] as $model_id => $reasoning_value ) {
+			$model_id        = trim( sanitize_text_field( (string) $model_id ) );
+			$reasoning_value = trim( sanitize_text_field( (string) $reasoning_value ) );
+
+			if ( '' === $model_id || '' === $reasoning_value ) {
+				continue;
+			}
+
+			$reasoning_by_model[ $model_id ] = $reasoning_value;
+		}
+
+		return $reasoning_by_model;
+	}
+
+	/**
+	 * Gets the saved reasoning setting for a model.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $model_id Optional model ID. Defaults to selected model.
+	 * @return string Reasoning value (e.g. 'on', 'off'), or empty string when unset.
+	 */
+	public static function get_selected_reasoning( string $model_id = '' ): string {
+		$model_id = '' !== $model_id ? trim( $model_id ) : self::get_selected_model();
+		if ( '' === $model_id ) {
 			return '';
 		}
 
-		return trim( (string) $settings[ self::KEY_REASONING ] );
+		$reasoning_by_model = self::get_reasoning_by_model();
+		if ( ! isset( $reasoning_by_model[ $model_id ] ) ) {
+			return '';
+		}
+
+		return trim( (string) $reasoning_by_model[ $model_id ] );
 	}
 }

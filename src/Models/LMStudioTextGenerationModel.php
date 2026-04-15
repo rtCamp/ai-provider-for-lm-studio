@@ -103,8 +103,8 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$params['temperature'] = $temperature;
 		}
 
-		$reasoning = LMStudioSettings::get_selected_reasoning();
-		if ( '' !== $reasoning ) {
+		$reasoning = LMStudioSettings::get_selected_reasoning( (string) $params['model'] );
+		if ( '' !== $reasoning && $this->model_supports_reasoning_option( (string) $params['model'], $reasoning ) ) {
 			$params['reasoning'] = $reasoning;
 		}
 
@@ -118,6 +118,94 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		}
 
 		return apply_filters( 'connector_for_lm_studio_text_generation_params', $params );
+	}
+
+	/**
+	 * Checks whether a model supports the requested reasoning option.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $model_id Model ID/key.
+	 * @param string $reasoning Reasoning option value.
+	 * @return bool
+	 */
+	private function model_supports_reasoning_option( string $model_id, string $reasoning ): bool {
+		$model_id  = trim( $model_id );
+		$reasoning = trim( $reasoning );
+
+		if ( '' === $model_id || '' === $reasoning ) {
+			return false;
+		}
+
+		static $allowed_reasoning_options_by_model = [];
+
+		if ( ! array_key_exists( $model_id, $allowed_reasoning_options_by_model ) ) {
+			$allowed_reasoning_options_by_model[ $model_id ] = $this->get_allowed_reasoning_options_for_model( $model_id );
+		}
+
+		return in_array( $reasoning, $allowed_reasoning_options_by_model[ $model_id ], true );
+	}
+
+	/**
+	 * Loads allowed reasoning options for a model from LM Studio models endpoint.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $model_id Model ID/key.
+	 * @return array<int, string>
+	 */
+	private function get_allowed_reasoning_options_for_model( string $model_id ): array {
+		$url = LMStudioProvider::url( 'api/v1/models' );
+
+		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+		$response = wp_remote_get(
+			$url,
+			[
+				'sslverify' => false,
+				'timeout'   => 8,
+			]
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return [];
+		}
+
+		$status_code = (int) wp_remote_retrieve_response_code( $response );
+		if ( $status_code < 200 || $status_code >= 300 ) {
+			return [];
+		}
+
+		$body = wp_remote_retrieve_body( $response );
+		$data = json_decode( $body, true );
+
+		if ( ! is_array( $data ) || ! isset( $data['models'] ) || ! is_array( $data['models'] ) ) {
+			return [];
+		}
+
+		foreach ( $data['models'] as $model ) {
+			if ( ! is_array( $model ) || ! isset( $model['key'] ) || ! is_string( $model['key'] ) ) {
+				continue;
+			}
+
+			if ( $model_id !== $model['key'] ) {
+				continue;
+			}
+
+			if ( ! isset( $model['capabilities']['reasoning']['allowed_options'] ) || ! is_array( $model['capabilities']['reasoning']['allowed_options'] ) ) {
+				return [];
+			}
+
+			$allowed_options = array_values(
+				array_filter(
+					$model['capabilities']['reasoning']['allowed_options'],
+					'is_string'
+				)
+			);
+
+			return $allowed_options;
+		}
+
+		return [];
 	}
 
 	/**

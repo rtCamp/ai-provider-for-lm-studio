@@ -6,6 +6,30 @@
 
 	/** @type {Object.<string, {reasoning: {allowed_options: string[], default: string}|null}>} */
 	let modelCapabilitiesMap = {};
+	/** @type {Object.<string, string>} */
+	let reasoningByModel = {};
+
+	function syncReasoningHiddenInputs() {
+		const container = document.getElementById( 'lmstudio-reasoning-hidden-inputs' );
+		if ( ! container ) {
+			return;
+		}
+
+		container.innerHTML = '';
+
+		Object.keys( reasoningByModel ).forEach( function( modelId ) {
+			const value = reasoningByModel[ modelId ];
+			if ( ! modelId || ! value ) {
+				return;
+			}
+
+			const input = document.createElement( 'input' );
+			input.type = 'hidden';
+			input.name = 'connector_for_lmstudio_settings[reasoning][' + modelId + ']';
+			input.value = value;
+			container.appendChild( input );
+		} );
+	}
 
 	function getModelId( model ) {
 		if ( model && typeof model.id === 'string' && model.id ) {
@@ -58,16 +82,14 @@
 		// Determine which option to pre-select.
 		const options = reasoning.allowed_options;
 		const modelDefault = reasoning.default || options[ 0 ];
+		const currentSavedForModel = reasoningByModel[ modelId ] || '';
 		const effectiveValue =
-			savedReasoning && options.indexOf( savedReasoning ) !== -1
-				? savedReasoning
-				: modelDefault;
+			currentSavedForModel && options.indexOf( currentSavedForModel ) !== -1
+				? currentSavedForModel
+				: ( savedReasoning && options.indexOf( savedReasoning ) !== -1 ? savedReasoning : modelDefault );
 
-		const hiddenInput = document.getElementById( 'connector_for_lmstudio_settings-reasoning' );
-		// Sync the hidden input so the form always submits the current value.
-		if ( hiddenInput ) {
-			hiddenInput.value = effectiveValue;
-		}
+		reasoningByModel[ modelId ] = effectiveValue;
+		syncReasoningHiddenInputs();
 
 		options.forEach( function( option ) {
 			const label = document.createElement( 'label' );
@@ -75,16 +97,15 @@
 
 			const radio = document.createElement( 'input' );
 			radio.type = 'radio';
-			radio.name = 'connector_for_lmstudio_settings[reasoning]';
+			radio.name = 'lmstudio-reasoning-ui';
 			radio.id = 'lmstudio-reasoning-' + option;
 			radio.value = option;
 			radio.checked = ( option === effectiveValue );
 			label.htmlFor = radio.id;
 
 			radio.addEventListener( 'change', function() {
-				if ( hiddenInput ) {
-					hiddenInput.value = option;
-				}
+				reasoningByModel[ modelId ] = option;
+				syncReasoningHiddenInputs();
 			} );
 
 			const capitalised = option.charAt( 0 ).toUpperCase() + option.slice( 1 );
@@ -240,6 +261,10 @@
 		}
 
 		const settings = window.ConnectorForLMStudioSettings;
+		reasoningByModel = settings.selectedReasoningByModel && typeof settings.selectedReasoningByModel === 'object'
+			? settings.selectedReasoningByModel
+			: {};
+		syncReasoningHiddenInputs();
 
 		loadModels(
 			settings.ajaxUrl,
