@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-03-24T09:19:24+00:00\n"
+"POT-Creation-Date: 2026-04-30T12:30:41+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: connector-for-lmstudio\n"
@@ -57,50 +57,68 @@ msgstr ""
 msgid "LM Studio is a self-hosted platform for managing and deploying large language models (LLMs)."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:72
+#: src/Settings/LMStudioSettings.php:76
 msgid "Host URL"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:81
+#: src/Settings/LMStudioSettings.php:85
 msgid "Available Models"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:96
-#: src/Settings/LMStudioSettings.php:97
+#: src/Settings/LMStudioSettings.php:94
+#: src/Settings/LMStudioSettings.php:380
+msgid "Reasoning"
+msgstr ""
+
+#: src/Settings/LMStudioSettings.php:108
+#: src/Settings/LMStudioSettings.php:109
 msgid "LM Studio Settings"
 msgstr ""
 
 #. translators: 1: opening anchor tag, 2: closing anchor tag
-#: src/Settings/LMStudioSettings.php:148
+#: src/Settings/LMStudioSettings.php:163
 msgid "If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s."
 msgstr ""
 
 #. translators: 1: code opening tag, 2: code closing tag
-#: src/Settings/LMStudioSettings.php:188
+#: src/Settings/LMStudioSettings.php:203
 msgid "Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s)."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:215
+#: src/Settings/LMStudioSettings.php:230
 msgid "Use model selected by AI Client"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:227
+#: src/Settings/LMStudioSettings.php:242
 msgid "Choose a default LM Studio model. If left empty, the model requested by AI Client is used."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:272
+#: src/Settings/LMStudioSettings.php:289
+#: src/Settings/LMStudioSettings.php:415
 msgid "Insufficient permissions."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:279
+#: src/Settings/LMStudioSettings.php:296
 msgid "AI provider not found."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:288
+#: src/Settings/LMStudioSettings.php:305
 msgid "AI provider not configured - missing API credentials."
 msgstr ""
 
 #. translators: %s: Error message.
-#: src/Settings/LMStudioSettings.php:298
+#: src/Settings/LMStudioSettings.php:315
 msgid "Could not list models for provider. Error: %s"
+msgstr ""
+
+#: src/Settings/LMStudioSettings.php:385
+msgid "Control reasoning mode for the selected model. Options depend on the model's capabilities."
+msgstr ""
+
+#: src/Settings/LMStudioSettings.php:397
+msgid "To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints"
+msgstr ""
+
+#: src/Settings/LMStudioSettings.php:436
+msgid "Invalid response from LM Studio."
 msgstr ""
