@@ -10,7 +10,8 @@ import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
-// Type definitions for LM Studio Settings structures
+// Type definitions to help TypeScript understand the data structures.
+// These match the structure defined by our PHP settings class.
 interface LMStudioSettingsGlobal {
 	ajaxUrl?: string;
 	capabilitiesAjaxUrl?: string;
@@ -20,40 +21,50 @@ interface LMStudioSettingsGlobal {
 
 declare global {
 	interface Window {
+		// WordPress exposes this global object to pass saved database settings to our JS.
 		ConnectorForLMStudioSettings?: LMStudioSettingsGlobal;
 	}
 }
 
+// Represents reasoning capabilities (e.g. standard vs deep thinking) configured on models.
 interface ReasoningCapability {
 	allowed_options: string[];
 	default: string;
 }
 
+// Maps model identifiers to their specific parameters/capabilities.
 interface ModelCapabilities {
 	reasoning: ReasoningCapability | null;
 }
 
+// Structure representing a single model retrieved from LM Studio.
 interface LMStudioModel {
 	id?: string;
 	name?: string;
 	key?: string;
 }
 
+// Wrapper for standard WordPress API responses.
 interface AjaxResponse<T> {
 	success: boolean;
 	data: T | string;
 }
 
+// UI design system color tokens matching standard WordPress admin styles.
 const ERROR_COLOR = '#d63638';
 const STATUS_COLOR = '#50575e';
 
-/** Keep track of the reasoning capabilities per model */
+// Cache to store the retrieved reasoning configurations of each model.
 let modelCapabilitiesMap: Record<string, ModelCapabilities> = {};
 
+// Safely retrieve the settings passed from WordPress PHP.
 const settings = window.ConnectorForLMStudioSettings || {};
 
 /**
  * Helper function to extract Model ID safely from response.
+ *
+ * Some models use the "id" field while others use "name".
+ * We gracefully fall back to ensure we always have an identifier.
  *
  * @param {LMStudioModel} model Model object.
  */
@@ -82,6 +93,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		'lmstudio-reasoning-fieldset',
 	);
 
+	// Stop if the reasoning UI containers are missing from the page layout.
 	if ( ! container || ! fieldset ) {
 		return;
 	}
@@ -93,6 +105,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 	const capabilities = modelId ? modelCapabilitiesMap[ modelId ] : null;
 	const reasoning = capabilities?.reasoning || null;
 
+	// If this model does not support reasoning features, hide the UI section entirely.
 	if (
 		! reasoning ||
 		! Array.isArray( reasoning.allowed_options ) ||
@@ -102,7 +115,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		return;
 	}
 
-	// Determine which option to pre-select.
+	// Figure out which reasoning mode should be pre-selected on load.
 	const options = reasoning.allowed_options;
 	const modelDefault = reasoning.default || options[ 0 ] || '';
 	const effectiveValue =
@@ -114,11 +127,12 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		'connector_for_lmstudio_settings-reasoning',
 	) as HTMLInputElement | null;
 
-	// Sync the hidden input so the form always submits the current value.
+	// Sync the hidden form input so it saves correctly when the user submits the settings page.
 	if ( hiddenInput ) {
 		hiddenInput.value = effectiveValue;
 	}
 
+	// Dynamically build and insert radio inputs for each available reasoning option.
 	options.forEach( ( option ) => {
 		const label = document.createElement( 'label' );
 
@@ -130,12 +144,14 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		radio.checked = option === effectiveValue;
 		label.htmlFor = radio.id;
 
+		// Update the hidden form field whenever a different radio option is checked.
 		radio.addEventListener( 'change', () => {
 			if ( hiddenInput ) {
 				hiddenInput.value = option;
 			}
 		} );
 
+		// Capitalize the first letter for a friendlier UI display label.
 		const capitalised =
 			option.charAt( 0 ).toUpperCase() + option.slice( 1 );
 		label.appendChild( radio );
@@ -143,6 +159,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		fieldset.appendChild( label );
 	} );
 
+	// Reveal the reasoning field section since options exist.
 	container.style.display = 'block';
 };
 
@@ -165,8 +182,10 @@ const renderModels = (
 		return;
 	}
 
+	// Clear out any old dropdown options.
 	select.innerHTML = '';
 
+	// Add the placeholder default option allowing fallback to general client model.
 	const defaultOption = document.createElement( 'option' );
 	defaultOption.value = '';
 	defaultOption.textContent = __( 'Use model selected by AI Client', 'connector-for-lmstudio' );
@@ -174,6 +193,7 @@ const renderModels = (
 
 	let hasSelectedModel = false;
 
+	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
 		status.textContent = __(
 			'No models found. Load or download a model in LM Studio and reload this page.',
@@ -181,6 +201,7 @@ const renderModels = (
 		);
 		status.style.color = ERROR_COLOR;
 
+		// If a model was saved previously, keep displaying it so the user does not lose state.
 		if ( selectedModel ) {
 			const selectedOnlyOption = document.createElement( 'option' );
 			selectedOnlyOption.value = selectedModel;
@@ -193,6 +214,7 @@ const renderModels = (
 		return;
 	}
 
+	// Populate the dropdown with all models retrieved from the local LM Studio server.
 	models.forEach( ( model ) => {
 		const modelId = getModelId( model );
 		if ( ! modelId ) {
@@ -203,6 +225,7 @@ const renderModels = (
 		option.value = modelId;
 		option.textContent = modelId;
 
+		// Pre-select the option if it matches the user's previously saved setting.
 		if ( selectedModel && modelId === selectedModel ) {
 			option.selected = true;
 			hasSelectedModel = true;
@@ -211,6 +234,7 @@ const renderModels = (
 		select.appendChild( option );
 	} );
 
+	// If the previously saved model is no longer active in LM Studio, display it with a "saved" label.
 	if ( selectedModel && ! hasSelectedModel ) {
 		const missingOption = document.createElement( 'option' );
 		missingOption.value = selectedModel;
@@ -224,12 +248,13 @@ const renderModels = (
 	status.textContent = sprintf( _n( '%d model loaded from server.', '%d models loaded from server.', models.length, 'connector-for-lmstudio' ), models.length );
 	status.style.color = STATUS_COLOR;
 
-	// Re-render reasoning whenever a different model is chosen.
+	// Refresh the reasoning options dynamic field when the user switches models.
 	select.addEventListener( 'change', () => {
 		renderReasoning( '' );
 	} );
 };
 
+// Render user-facing error state when connection or fetch fails.
 const renderError = ( message: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	if ( ! status ) {
@@ -240,6 +265,7 @@ const renderError = ( message: string ): void => {
 	status.style.color = ERROR_COLOR;
 };
 
+// Asynchronously load the active models from the local LM Studio server via WordPress REST API.
 const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	if ( ! status ) {
@@ -292,21 +318,25 @@ const loadCapabilities = (
 			) {
 				return;
 			}
+			// Map and cache capabilities in local state, then draw radio controls.
 			modelCapabilitiesMap = payload.data || {};
 			renderReasoning( savedReasoning );
 		} )
 		.catch( () => {
-			// Fail silently – reasoning UI simply stays hidden.
+			// Fail silently – reasoning UI simply stays hidden if endpoints fail.
 		} );
 };
 
+// Main initializer method that triggers all necessary fetches.
 const init = (): void => {
 	if ( ! settings.ajaxUrl ) {
 		return;
 	}
 
+	// Load active model list first.
 	loadModels( settings.ajaxUrl, settings.selectedModel || '' );
 
+	// Fetch dynamic model features if capabilities endpoint is defined.
 	if ( settings.capabilitiesAjaxUrl ) {
 		loadCapabilities(
 			settings.capabilitiesAjaxUrl,
@@ -315,5 +345,5 @@ const init = (): void => {
 	}
 };
 
-// Bootstrap initialization when DOM is ready
+// Bootstrap initialization using standard WordPress domReady callback.
 domReady( init );
