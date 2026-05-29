@@ -58,6 +58,7 @@
 		"lint:php:fix": "composer run-script format",
 		"lint:php:stan": "composer run-script phpstan",
 		"lint:php": "composer run-script lint",
+		"i18n:pot": "wp i18n make-pot . languages/connector-for-lmstudio.pot --domain=connector-for-lmstudio --exclude=node_modules,vendor,tests",
 		"lint": "npm-run-all --parallel lint:*",
 		"plugin-zip": "wp-scripts plugin-zip"
 	},

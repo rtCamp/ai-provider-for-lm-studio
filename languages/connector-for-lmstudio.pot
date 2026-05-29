@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-30T12:30:41+00:00\n"
+"POT-Creation-Date: 2026-05-29T17:12:44+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: connector-for-lmstudio\n"
@@ -66,7 +66,7 @@ msgid "Available Models"
 msgstr ""
 
 #: src/Settings/LMStudioSettings.php:94
-#: src/Settings/LMStudioSettings.php:380
+#: src/Settings/LMStudioSettings.php:395
 msgid "Reasoning"
 msgstr ""
 
@@ -86,6 +86,7 @@ msgid "Configure the base URL for the LM Studio server. Leave this empty to use 
 msgstr ""
 
 #: src/Settings/LMStudioSettings.php:230
+#: build/admin/settings.js:1
 msgid "Use model selected by AI Client"
 msgstr ""
 
@@ -93,32 +94,58 @@ msgstr ""
 msgid "Choose a default LM Studio model. If left empty, the model requested by AI Client is used."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:289
-#: src/Settings/LMStudioSettings.php:415
+#: src/Settings/LMStudioSettings.php:304
+#: src/Settings/LMStudioSettings.php:430
 msgid "Insufficient permissions."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:296
+#: src/Settings/LMStudioSettings.php:311
 msgid "AI provider not found."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:305
+#: src/Settings/LMStudioSettings.php:320
 msgid "AI provider not configured - missing API credentials."
 msgstr ""
 
 #. translators: %s: Error message.
-#: src/Settings/LMStudioSettings.php:315
+#: src/Settings/LMStudioSettings.php:330
 msgid "Could not list models for provider. Error: %s"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:385
+#: src/Settings/LMStudioSettings.php:400
 msgid "Control reasoning mode for the selected model. Options depend on the model's capabilities."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:397
+#: src/Settings/LMStudioSettings.php:412
 msgid "To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:436
+#: src/Settings/LMStudioSettings.php:451
 msgid "Invalid response from LM Studio."
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Loading models…"
+msgstr ""
+
+#: build/admin/settings.js:1
+#: build/admin/settings.js:6
+msgid "Failed to load models."
+msgstr ""
+
+#. translators: %s: Saved model identifier
+#: build/admin/settings.js:3
+#: build/admin/settings.js:6
+msgid "%s (saved)"
+msgstr ""
+
+#. translators: %d: Number of models loaded from server
+#: build/admin/settings.js:4
+msgid "%d model loaded from server."
+msgid_plural "%d models loaded from server."
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/admin/settings.js:4
+msgid "No models found. Load or download a model in LM Studio and reload this page."
 msgstr ""
