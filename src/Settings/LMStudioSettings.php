@@ -154,7 +154,7 @@ class LMStudioSettings {
 		}
 		?>
 
-		<div class="wrap" style="max-width: 50rem;">
+		<div class="wrap lmstudio-settings-wrap">
 			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 			<p>
 				<?php
@@ -257,13 +257,28 @@ class LMStudioSettings {
 			return;
 		}
 
+		$plugin_dir = CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR;
+		$asset_file = $plugin_dir . 'build/admin/settings.asset.php';
+		$asset      = file_exists( $asset_file ) ? require $asset_file : []; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Asset file path is built from a known constant.
+
+		$dependencies = isset( $asset['dependencies'] ) ? $asset['dependencies'] : [];
+		$version      = isset( $asset['version'] ) ? $asset['version'] : false;
+
 		wp_enqueue_script(
 			'connector-for-lmstudio-settings',
-			plugins_url( 'assets/settings-models.js', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
-			[],
-			'1.0.0',
+			plugins_url( 'build/admin/settings.js', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
+			$dependencies,
+			$version,
 			true
 		);
+
+		wp_enqueue_style(
+			'connector-for-lmstudio-settings',
+			plugins_url( 'build/admin/style-settings.css', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
+			[],
+			$version
+		);
+		wp_style_add_data( 'connector-for-lmstudio-settings', 'rtl', 'replace' );
 
 		wp_localize_script(
 			'connector-for-lmstudio-settings',
@@ -374,12 +389,12 @@ class LMStudioSettings {
 		$settings          = self::get_settings();
 		$current_reasoning = isset( $settings[ self::KEY_REASONING ] ) ? (string) $settings[ self::KEY_REASONING ] : '';
 		?>
-		<div id="lmstudio-reasoning-container" style="display:none;">
-			<fieldset id="lmstudio-reasoning-fieldset" style="border:0;margin:0;padding:0;">
+		<div id="lmstudio-reasoning-container" class="lmstudio-reasoning-container">
+			<fieldset id="lmstudio-reasoning-fieldset" class="lmstudio-reasoning-fieldset">
 				<legend class="screen-reader-text">
 					<?php esc_html_e( 'Reasoning', 'connector-for-lmstudio' ); ?>
 				</legend>
-				<!-- Radio buttons injected by settings-models.js -->
+				<!-- Radio buttons injected by settings.js -->
 			</fieldset>
 			<p class="description">
 				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
@@ -392,7 +407,7 @@ class LMStudioSettings {
 			value="<?php echo esc_attr( $current_reasoning ); ?>"
 		/>
 		<hr/>
-		<p class="description" style="font-style: italic;">
+		<p class="description lmstudio-description-italic">
 			<?php
 			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
 			?>

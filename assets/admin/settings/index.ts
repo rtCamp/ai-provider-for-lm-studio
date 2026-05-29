@@ -1,13 +1,62 @@
+/**
+ * LM Studio Settings Models Script
+ *
+ * This handles the loading of available models from the LM Studio local server
+ * and displays reasoning configuration dynamically in the WordPress admin panel.
+ */
+
+import './style.scss';
+
+// Type definitions for LM Studio Settings structures
+interface LMStudioSettingsGlobal {
+	ajaxUrl?: string;
+	capabilitiesAjaxUrl?: string;
+	selectedModel?: string;
+	selectedReasoning?: string;
+}
+
+declare global {
+	interface Window {
+		ConnectorForLMStudioSettings?: LMStudioSettingsGlobal;
+	}
+}
+
+interface ReasoningCapability {
+	allowed_options: string[];
+	default: string;
+}
+
+interface ModelCapabilities {
+	reasoning: ReasoningCapability | null;
+}
+
+interface LMStudioModel {
+	id?: string;
+	name?: string;
+	key?: string;
+}
+
+interface AjaxResponse<T> {
+	success: boolean;
+	data: T | string;
+}
+
 ( function() {
 	'use strict';
 
 	const ERROR_COLOR = '#d63638';
 	const STATUS_COLOR = '#50575e';
 
-	/** @type {Object.<string, {reasoning: {allowed_options: string[], default: string}|null}>} */
-	let modelCapabilitiesMap = {};
+	/** Keep track of the reasoning capabilities per model */
+	let modelCapabilitiesMap: Record<string, ModelCapabilities> = {};
 
-	function getModelId( model ) {
+	const settings = window.ConnectorForLMStudioSettings || {};
+
+	/**
+	 * Helper function to extract Model ID safely from response.
+	 * @param {LMStudioModel} model
+	 */
+	function getModelId( model: LMStudioModel ): string {
 		if ( model && typeof model.id === 'string' && model.id ) {
 			return model.id;
 		}
@@ -19,19 +68,28 @@
 		return '';
 	}
 
-	function getSelectedModelId() {
-		const select = document.getElementById( 'connector_for_lmstudio_settings-model' );
+	/**
+	 * Get the currently selected Model ID in the select box.
+	 */
+	function getSelectedModelId(): string {
+		const select = document.getElementById(
+			'connector_for_lmstudio_settings-model',
+		) as HTMLSelectElement | null;
 		return select ? select.value : '';
 	}
 
 	/**
 	 * Renders reasoning radio buttons for the currently selected model.
 	 *
-	 * @param {string} savedReasoning Previously saved reasoning value (used on initial page load), Pass '' to fall back to the model's own default.
+	 * @param {string} savedReasoning Previously saved reasoning value.
 	 */
-	function renderReasoning( savedReasoning ) {
-		const container = document.getElementById( 'lmstudio-reasoning-container' );
-		const fieldset = document.getElementById( 'lmstudio-reasoning-fieldset' );
+	function renderReasoning( savedReasoning: string ): void {
+		const container = document.getElementById(
+			'lmstudio-reasoning-container',
+		);
+		const fieldset = document.getElementById(
+			'lmstudio-reasoning-fieldset',
+		);
 
 		if ( ! container || ! fieldset ) {
 			return;
@@ -44,7 +102,8 @@
 
 		const modelId = getSelectedModelId();
 		const capabilities = modelId ? modelCapabilitiesMap[ modelId ] : null;
-		const reasoning = capabilities && capabilities.reasoning ? capabilities.reasoning : null;
+		const reasoning =
+			capabilities && capabilities.reasoning ? capabilities.reasoning : null;
 
 		if (
 			! reasoning ||
@@ -57,13 +116,16 @@
 
 		// Determine which option to pre-select.
 		const options = reasoning.allowed_options;
-		const modelDefault = reasoning.default || options[ 0 ];
+		const modelDefault = reasoning.default || options[ 0 ] || '';
 		const effectiveValue =
 			savedReasoning && options.indexOf( savedReasoning ) !== -1
 				? savedReasoning
 				: modelDefault;
 
-		const hiddenInput = document.getElementById( 'connector_for_lmstudio_settings-reasoning' );
+		const hiddenInput = document.getElementById(
+			'connector_for_lmstudio_settings-reasoning',
+		) as HTMLInputElement | null;
+
 		// Sync the hidden input so the form always submits the current value.
 		if ( hiddenInput ) {
 			hiddenInput.value = effectiveValue;
@@ -71,14 +133,13 @@
 
 		options.forEach( function( option ) {
 			const label = document.createElement( 'label' );
-			label.style.cssText = 'display:inline-flex;align-items:center;gap:0.3rem;margin-right:1rem !important;';
 
 			const radio = document.createElement( 'input' );
 			radio.type = 'radio';
 			radio.name = 'connector_for_lmstudio_settings[reasoning]';
 			radio.id = 'lmstudio-reasoning-' + option;
 			radio.value = option;
-			radio.checked = ( option === effectiveValue );
+			radio.checked = option === effectiveValue;
 			label.htmlFor = radio.id;
 
 			radio.addEventListener( 'change', function() {
@@ -87,17 +148,28 @@
 				}
 			} );
 
-			const capitalised = option.charAt( 0 ).toUpperCase() + option.slice( 1 );
+			const capitalised =
+				option.charAt( 0 ).toUpperCase() + option.slice( 1 );
 			label.appendChild( radio );
-			label.appendChild( document.createTextNode( capitalised ) );
+			label.appendChild( document.createTextNode( ' ' + capitalised ) );
 			fieldset.appendChild( label );
 		} );
 
 		container.style.display = 'block';
 	}
 
-	function renderModels( models, selectedModel ) {
-		const select = document.getElementById( 'connector_for_lmstudio_settings-model' );
+	/**
+	 * Renders option tags inside the select element.
+	 * @param {LMStudioModel[]} models
+	 * @param {string}          selectedModel
+	 */
+	function renderModels(
+		models: LMStudioModel[],
+		selectedModel: string,
+	): void {
+		const select = document.getElementById(
+			'connector_for_lmstudio_settings-model',
+		) as HTMLSelectElement | null;
 		const status = document.getElementById( 'lmstudio-model-status' );
 
 		if ( ! select || ! status ) {
@@ -114,7 +186,8 @@
 		let hasSelectedModel = false;
 
 		if ( models.length === 0 ) {
-			status.textContent = 'No models found. Load or download a model in LM Studio and reload this page.';
+			status.textContent =
+				'No models found. Load or download a model in LM Studio and reload this page.';
 			status.style.color = ERROR_COLOR;
 
 			if ( selectedModel ) {
@@ -154,7 +227,10 @@
 			select.appendChild( missingOption );
 		}
 
-		status.textContent = models.length === 1 ? '1 model loaded from server.' : models.length + ' models loaded from server.';
+		status.textContent =
+			models.length === 1
+				? '1 model loaded from server.'
+				: models.length + ' models loaded from server.';
 		status.style.color = STATUS_COLOR;
 
 		// Re-render reasoning whenever a different model is chosen.
@@ -163,7 +239,7 @@
 		} );
 	}
 
-	function renderError( message ) {
+	function renderError( message: string ): void {
 		const status = document.getElementById( 'lmstudio-model-status' );
 		if ( ! status ) {
 			return;
@@ -173,7 +249,7 @@
 		status.style.color = ERROR_COLOR;
 	}
 
-	function loadModels( ajaxUrl, selectedModel ) {
+	function loadModels( ajaxUrl: string, selectedModel: string ): void {
 		const status = document.getElementById( 'lmstudio-model-status' );
 		if ( ! status ) {
 			return;
@@ -189,29 +265,37 @@
 				if ( ! response.ok ) {
 					throw new Error( 'Could not connect to load models.' );
 				}
-				return response.json();
+				return response.json() as Promise<AjaxResponse<LMStudioModel[]>>;
 			} )
 			.then( function( payload ) {
 				if ( ! payload || ! payload.success ) {
-					throw new Error( payload && typeof payload.data === 'string' ? payload.data : 'Failed to load models.' );
+					throw new Error(
+						payload && typeof payload.data === 'string'
+							? payload.data
+							: 'Failed to load models.',
+					);
 				}
 
 				const models = Array.isArray( payload.data ) ? payload.data : [];
 				renderModels( models, selectedModel );
 			} )
-			.catch( function( error ) {
-				renderError( error && error.message ? error.message : 'Failed to load models.' );
+			.catch( function( error: Error ) {
+				renderError(
+					error && error.message ? error.message : 'Failed to load models.',
+				);
 			} );
 	}
 
 	/**
 	 * Fetches per-model reasoning capabilities and, once available, renders the
 	 * reasoning radio buttons for the currently selected model.
-	 *
-	 * @param {string} capabilitiesAjaxUrl URL for the capabilities AJAX action.
-	 * @param {string} savedReasoning      Previously saved reasoning setting value.
+	 * @param {string} capabilitiesAjaxUrl
+	 * @param {string} savedReasoning
 	 */
-	function loadCapabilities( capabilitiesAjaxUrl, savedReasoning ) {
+	function loadCapabilities(
+		capabilitiesAjaxUrl: string,
+		savedReasoning: string,
+	): void {
 		window
 			.fetch( capabilitiesAjaxUrl, {
 				credentials: 'same-origin',
@@ -220,13 +304,17 @@
 				if ( ! response.ok ) {
 					return null;
 				}
-				return response.json();
+				return response.json() as Promise<AjaxResponse<Record<string, ModelCapabilities>>>;
 			} )
 			.then( function( payload ) {
-				if ( ! payload || ! payload.success || typeof payload.data !== 'object' ) {
+				if (
+					! payload ||
+					! payload.success ||
+					typeof payload.data !== 'object'
+				) {
 					return;
 				}
-				modelCapabilitiesMap = payload.data || {};
+				modelCapabilitiesMap = ( payload.data ) || {};
 				renderReasoning( savedReasoning );
 			} )
 			.catch( function() {
@@ -234,17 +322,14 @@
 			} );
 	}
 
-	document.addEventListener( 'DOMContentLoaded', function() {
-		if ( ! window.ConnectorForLMStudioSettings || ! window.ConnectorForLMStudioSettings.ajaxUrl ) {
+	function init(): void {
+		if (
+			! settings.ajaxUrl
+		) {
 			return;
 		}
 
-		const settings = window.ConnectorForLMStudioSettings;
-
-		loadModels(
-			settings.ajaxUrl,
-			settings.selectedModel || '',
-		);
+		loadModels( settings.ajaxUrl, settings.selectedModel || '' );
 
 		if ( settings.capabilitiesAjaxUrl ) {
 			loadCapabilities(
@@ -252,5 +337,12 @@
 				settings.selectedReasoning || '',
 			);
 		}
-	} );
+	}
+
+	// Bootstrap initialization when DOM is ready
+	if ( document.readyState === 'loading' ) {
+		document.addEventListener( 'DOMContentLoaded', init );
+	} else {
+		init();
+	}
 }() );

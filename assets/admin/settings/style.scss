@@ -1,0 +1,77 @@
+// LM Studio Settings Page Styles
+
+.lmstudio-settings-wrap {
+	max-width: 50rem;
+}
+
+// Reasoning container and fieldset
+.lmstudio-reasoning-container {
+	display: none;
+	margin-top: 15px;
+	background: #fcfcfc;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	padding: 14px 18px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+	transition: all 0.2s ease-in-out;
+}
+
+.lmstudio-reasoning-fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+
+	label {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		margin-right: 12px !important;
+		font-weight: 500;
+		color: #2c3338;
+		cursor: pointer;
+		font-size: 13px;
+		user-select: none;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: #2271b1;
+		}
+
+		input[type="radio"] {
+			margin: 0;
+			cursor: pointer;
+			border: 1px solid #8c8f94;
+			border-radius: 50%;
+			width: 16px;
+			height: 16px;
+
+			&:checked {
+				border-color: #2271b1;
+				background-color: #2271b1;
+
+				&::before {
+					background-color: #fff;
+				}
+			}
+		}
+	}
+}
+
+// Status text next to selectors/inputs
+#lmstudio-model-status {
+	margin-left: 10px;
+	font-size: 12px;
+	font-weight: 500;
+	vertical-align: middle;
+	transition: color 0.15s ease;
+}
+
+// Description text style for italicized info/warnings
+.lmstudio-description-italic {
+	font-style: italic;
+	color: #646970;
+	margin-top: 15px;
+}
