@@ -35,6 +35,8 @@ interface ReasoningCapability {
 // Maps model identifiers to their specific parameters/capabilities.
 interface ModelCapabilities {
 	reasoning: ReasoningCapability | null;
+	vision?: boolean;
+	trained_for_tool_use?: boolean;
 }
 
 // Structure representing a single model retrieved from LM Studio.
@@ -49,10 +51,6 @@ interface AjaxResponse<T> {
 	success: boolean;
 	data: T | string;
 }
-
-// UI design system color tokens matching standard WordPress admin styles.
-const ERROR_COLOR = '#d63638';
-const STATUS_COLOR = '#50575e';
 
 // Cache to store the retrieved reasoning configurations of each model.
 let modelCapabilitiesMap: Record<string, ModelCapabilities> = {};
@@ -78,6 +76,91 @@ const getSelectedModelId = (): string => {
 		'connector_for_lmstudio_settings-model',
 	) as HTMLSelectElement | null;
 	return select?.value || '';
+};
+
+/**
+ * Renders beautiful capability indicator badges (Vision, Tool Calling, Reasoning)
+ * next to the selected model dropdown.
+ */
+const renderCapabilitiesBadges = (): void => {
+	const select = document.getElementById(
+		'connector_for_lmstudio_settings-model',
+	) as HTMLSelectElement | null;
+	const container = document.getElementById( 'lmstudio-models-container' );
+
+	if ( ! select || ! container ) {
+		return;
+	}
+
+	// Find or create badges container
+	let badgesContainer = document.getElementById( 'lmstudio-capabilities-badges-container' );
+	if ( ! badgesContainer ) {
+		badgesContainer = document.createElement( 'div' );
+		badgesContainer.id = 'lmstudio-capabilities-badges-container';
+		badgesContainer.className = 'lmstudio-capabilities-badges-container';
+
+		// Insert directly inside models container
+		container.appendChild( badgesContainer );
+	}
+
+	// Clear previous badges
+	badgesContainer.innerHTML = '';
+
+	const modelId = select.value;
+	if ( ! modelId ) {
+		badgesContainer.style.display = 'none';
+		return;
+	}
+
+	const capabilities = modelCapabilitiesMap[ modelId ];
+	if ( ! capabilities ) {
+		badgesContainer.style.display = 'none';
+		return;
+	}
+
+	// Create vision badge if true
+	if ( capabilities.vision ) {
+		const visionBadge = document.createElement( 'span' );
+		visionBadge.className = 'lmstudio-cap-badge lmstudio-cap-vision';
+		visionBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+			<circle cx="12" cy="12" r="3"></circle>
+		</svg> ${ __( 'Vision', 'connector-for-lmstudio' ) }`;
+		badgesContainer.appendChild( visionBadge );
+	}
+
+	// Create tool use badge if true
+	if ( capabilities.trained_for_tool_use ) {
+		const toolBadge = document.createElement( 'span' );
+		toolBadge.className = 'lmstudio-cap-badge lmstudio-cap-tools';
+		toolBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+		</svg> ${ __( 'Tool Calling', 'connector-for-lmstudio' ) }`;
+		badgesContainer.appendChild( toolBadge );
+	}
+
+	// Create reasoning support badge if reasoning capability exists
+	const reasoning = capabilities.reasoning || null;
+	if (
+		reasoning &&
+		Array.isArray( reasoning.allowed_options ) &&
+		reasoning.allowed_options.length > 0
+	) {
+		const reasoningBadge = document.createElement( 'span' );
+		reasoningBadge.className = 'lmstudio-cap-badge lmstudio-cap-reasoning';
+		reasoningBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88A2.5 2.5 0 0 1 9.5 2z"></path>
+			<path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88A2.5 2.5 0 0 0 14.5 2z"></path>
+		</svg> ${ __( 'Reasoning', 'connector-for-lmstudio' ) }`;
+		badgesContainer.appendChild( reasoningBadge );
+	}
+
+	// Show container if it has badges
+	if ( badgesContainer.children.length > 0 ) {
+		badgesContainer.style.display = 'flex';
+	} else {
+		badgesContainer.style.display = 'none';
+	}
 };
 
 /**
@@ -111,6 +194,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		! Array.isArray( reasoning.allowed_options ) ||
 		reasoning.allowed_options.length === 0
 	) {
+		container.classList.remove( 'lmstudio-visible' );
 		container.style.display = 'none';
 		return;
 	}
@@ -135,6 +219,10 @@ const renderReasoning = ( savedReasoning: string ): void => {
 	// Dynamically build and insert radio inputs for each available reasoning option.
 	options.forEach( ( option ) => {
 		const label = document.createElement( 'label' );
+		label.className = 'lmstudio-reasoning-card';
+		if ( option === effectiveValue ) {
+			label.classList.add( 'lmstudio-checked' );
+		}
 
 		const radio = document.createElement( 'input' );
 		radio.type = 'radio';
@@ -149,18 +237,51 @@ const renderReasoning = ( savedReasoning: string ): void => {
 			if ( hiddenInput ) {
 				hiddenInput.value = option;
 			}
+			Array.from( fieldset.querySelectorAll( 'label' ) ).forEach( ( el ) => el.classList.remove( 'lmstudio-checked' ) );
+			label.classList.add( 'lmstudio-checked' );
 		} );
 
 		// Capitalize the first letter for a friendlier UI display label.
 		const capitalised =
 			option.charAt( 0 ).toUpperCase() + option.slice( 1 );
+
+		// Assemble premium custom components inside the radio card
 		label.appendChild( radio );
-		label.appendChild( document.createTextNode( ' ' + capitalised ) );
+
+		const headerDiv = document.createElement( 'div' );
+		headerDiv.className = 'lmstudio-card-header';
+
+		const titleSpan = document.createElement( 'span' );
+		titleSpan.className = 'lmstudio-card-title';
+		titleSpan.textContent = capitalised;
+
+		const indicatorDiv = document.createElement( 'div' );
+		indicatorDiv.className = 'lmstudio-radio-indicator';
+
+		headerDiv.appendChild( titleSpan );
+		headerDiv.appendChild( indicatorDiv );
+		label.appendChild( headerDiv );
+
+		const descDiv = document.createElement( 'div' );
+		descDiv.className = 'lmstudio-card-desc';
+		if ( option === 'on' ) {
+			descDiv.textContent = __( 'Enable full deep thinking reasoning capability for high-quality problem solving.', 'connector-for-lmstudio' );
+		} else if ( option === 'off' ) {
+			descDiv.textContent = __( 'Disable reasoning mode for standard fast responses without extended thinking cycles.', 'connector-for-lmstudio' );
+		} else {
+			/* translators: %s: reasoning option mode label */
+			descDiv.textContent = sprintf( __( 'Activate "%s" reasoning capability mode.', 'connector-for-lmstudio' ), capitalised );
+		}
+		label.appendChild( descDiv );
+
 		fieldset.appendChild( label );
 	} );
 
 	// Reveal the reasoning field section since options exist.
 	container.style.display = 'block';
+	requestAnimationFrame( () => {
+		container.classList.add( 'lmstudio-visible' );
+	} );
 };
 
 /**
@@ -195,11 +316,14 @@ const renderModels = (
 
 	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
-		status.textContent = __(
-			'No models found. Load or download a model in LM Studio and reload this page.',
-			'connector-for-lmstudio',
-		);
-		status.style.color = ERROR_COLOR;
+		status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge">
+			<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<circle cx="12" cy="12" r="10"></circle>
+				<line x1="12" y1="8" x2="12" y2="12"></line>
+				<line x1="12" y1="16" x2="12.01" y2="16"></line>
+			</svg>
+			${ __( 'No models found', 'connector-for-lmstudio' ) }
+		</span>`;
 
 		// If a model was saved previously, keep displaying it so the user does not lose state.
 		if ( selectedModel ) {
@@ -244,13 +368,26 @@ const renderModels = (
 		select.appendChild( missingOption );
 	}
 
-	/* translators: %d: Number of models loaded from server */
-	status.textContent = sprintf( _n( '%d model loaded from server.', '%d models loaded from server.', models.length, 'connector-for-lmstudio' ), models.length );
-	status.style.color = STATUS_COLOR;
+	// Render the model loaded count beautifully
+	const countText = sprintf(
+		/* translators: %d: number of models loaded */
+		_n( '%d model loaded', '%d models loaded', models.length, 'connector-for-lmstudio' ),
+		models.length,
+	);
+	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-success-badge">
+		<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+			<polyline points="20 6 9 17 4 12"></polyline>
+		</svg>
+		${ countText }
+	</span>`;
+
+	// Re-enable input selector once load completes
+	select.disabled = false;
 
 	// Refresh the reasoning options dynamic field when the user switches models.
 	select.addEventListener( 'change', () => {
 		renderReasoning( '' );
+		renderCapabilitiesBadges();
 	} );
 };
 
@@ -261,18 +398,35 @@ const renderError = ( message: string ): void => {
 		return;
 	}
 
-	status.textContent = message;
-	status.style.color = ERROR_COLOR;
+	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge" title="${ message }">
+		<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+			<circle cx="12" cy="12" r="10"></circle>
+			<line x1="12" y1="8" x2="12" y2="12"></line>
+			<line x1="12" y1="16" x2="12.01" y2="16"></line>
+		</svg>
+		${ __( 'Connection failed', 'connector-for-lmstudio' ) }
+	</span>`;
 };
 
 // Asynchronously load the active models from the local LM Studio server via WordPress REST API.
 const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
+	const select = document.getElementById(
+		'connector_for_lmstudio_settings-model',
+	) as HTMLSelectElement | null;
+
 	if ( ! status ) {
 		return;
 	}
 
-	status.textContent = __( 'Loading models…', 'connector-for-lmstudio' );
+	// Disable dropdown while fetching and render spinner badge
+	if ( select ) {
+		select.disabled = true;
+	}
+	status.innerHTML = `<span class="lmstudio-loader-badge">
+		<div class="lmstudio-spinner"></div>
+		${ __( 'Fetching models…', 'connector-for-lmstudio' ) }
+	</span>`;
 
 	apiFetch<AjaxResponse<LMStudioModel[]>>( {
 		url: ajaxUrl,
@@ -290,6 +444,9 @@ const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
 			renderModels( models, selectedModel );
 		} )
 		.catch( ( error: Error ) => {
+			if ( select ) {
+				select.disabled = false;
+			}
 			renderError(
 				error?.message || __( 'Failed to load models.', 'connector-for-lmstudio' ),
 			);
@@ -321,6 +478,7 @@ const loadCapabilities = (
 			// Map and cache capabilities in local state, then draw radio controls.
 			modelCapabilitiesMap = payload.data || {};
 			renderReasoning( savedReasoning );
+			renderCapabilitiesBadges();
 		} )
 		.catch( () => {
 			// Fail silently – reasoning UI simply stays hidden if endpoints fail.

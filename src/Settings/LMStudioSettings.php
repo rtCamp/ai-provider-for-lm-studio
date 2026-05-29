@@ -155,24 +155,50 @@ class LMStudioSettings {
 		?>
 
 		<div class="wrap lmstudio-settings-wrap">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-			<p>
-				<?php
-				printf(
-					/* translators: 1: opening anchor tag, 2: closing anchor tag */
-					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
-					'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '">',
-					'</a>'
-				);
-				?>
-			</p>
-			<form action="options.php" method="post">
-				<?php
-				settings_fields( self::OPTION_GROUP );
-				do_settings_sections( self::PAGE_SLUG );
-				submit_button();
-				?>
-			</form>
+			<div class="lmstudio-settings-card">
+				<div class="lmstudio-settings-header">
+					<div class="lmstudio-header-icon">
+						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+							<path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+						</svg>
+					</div>
+					<div class="lmstudio-header-content">
+						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+						<p class="lmstudio-header-subtitle">
+							<?php
+							echo esc_html__( 'Connect and configure your local LM Studio instance for offline AI capabilities in WordPress.', 'connector-for-lmstudio' );
+							?>
+						</p>
+					</div>
+				</div>
+
+				<div class="lmstudio-settings-body">
+					<div class="lmstudio-connector-info">
+						<p>
+							<?php
+							printf(
+								/* translators: 1: opening anchor tag, 2: closing anchor tag */
+								esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
+								'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '" class="lmstudio-link">',
+								'</a>'
+							);
+							?>
+						</p>
+					</div>
+
+					<form action="options.php" method="post" class="lmstudio-settings-form">
+						<?php
+						settings_fields( self::OPTION_GROUP );
+						do_settings_sections( self::PAGE_SLUG );
+						?>
+						<div class="lmstudio-form-actions">
+							<?php submit_button(); ?>
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 
 		<?php
@@ -221,21 +247,23 @@ class LMStudioSettings {
 		?>
 
 		<div id="lmstudio-models-container">
-			<select
-				id="<?php echo esc_attr( self::OPTION_NAME . '-model' ); ?>"
-				name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_MODEL . ']' ); ?>"
-				class="regular-text"
-			>
-				<option value="">
-					<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
-				</option>
-				<?php if ( '' !== $current_model ) : ?>
-					<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
-						<?php echo esc_html( $current_model ); ?>
+			<div class="lmstudio-models-row">
+				<select
+					id="<?php echo esc_attr( self::OPTION_NAME . '-model' ); ?>"
+					name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_MODEL . ']' ); ?>"
+					class="regular-text"
+				>
+					<option value="">
+						<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
 					</option>
-				<?php endif; ?>
-			</select>
-			<span id="lmstudio-model-status"></span>
+					<?php if ( '' !== $current_model ) : ?>
+						<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
+							<?php echo esc_html( $current_model ); ?>
+						</option>
+					<?php endif; ?>
+				</select>
+				<span id="lmstudio-model-status"></span>
+			</div>
 		</div>
 		<p class="description">
 			<?php
@@ -406,12 +434,22 @@ class LMStudioSettings {
 			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
 			value="<?php echo esc_attr( $current_reasoning ); ?>"
 		/>
-		<hr/>
-		<p class="description lmstudio-description-italic">
-			<?php
-			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
-			?>
-		</p>
+		<div class="lmstudio-alert lmstudio-alert-info">
+			<div class="lmstudio-alert-icon">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					<path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+				</svg>
+			</div>
+			<div class="lmstudio-alert-content">
+				<p class="lmstudio-alert-description">
+					<?php
+					echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'connector-for-lmstudio' );
+					?>
+				</p>
+			</div>
+		</div>
 		<?php
 	}
 
@@ -460,29 +498,47 @@ class LMStudioSettings {
 
 			$model_key = $model['key'];
 			$reasoning = null;
+			$vision    = false;
+			$tool_use  = false;
 
-			if (
-				isset( $model['capabilities']['reasoning'] ) &&
-				is_array( $model['capabilities']['reasoning'] ) &&
-				isset( $model['capabilities']['reasoning']['allowed_options'] ) &&
-				is_array( $model['capabilities']['reasoning']['allowed_options'] ) &&
-				! empty( $model['capabilities']['reasoning']['allowed_options'] )
-			) {
-				$raw       = $model['capabilities']['reasoning'];
-				$allowed   = array_values(
-					array_filter(
-						$raw['allowed_options'],
-						'is_string'
-					)
-				);
-				$default   = isset( $raw['default'] ) && is_string( $raw['default'] ) ? $raw['default'] : '';
-				$reasoning = [
-					'allowed_options' => $allowed,
-					'default'         => $default,
-				];
+			if ( isset( $model['capabilities'] ) && is_array( $model['capabilities'] ) ) {
+				$raw_caps = $model['capabilities'];
+
+				if (
+					isset( $raw_caps['reasoning'] ) &&
+					is_array( $raw_caps['reasoning'] ) &&
+					isset( $raw_caps['reasoning']['allowed_options'] ) &&
+					is_array( $raw_caps['reasoning']['allowed_options'] ) &&
+					! empty( $raw_caps['reasoning']['allowed_options'] )
+				) {
+					$raw       = $raw_caps['reasoning'];
+					$allowed   = array_values(
+						array_filter(
+							$raw['allowed_options'],
+							'is_string'
+						)
+					);
+					$default   = isset( $raw['default'] ) && is_string( $raw['default'] ) ? $raw['default'] : '';
+					$reasoning = [
+						'allowed_options' => $allowed,
+						'default'         => $default,
+					];
+				}
+
+				if ( isset( $raw_caps['vision'] ) ) {
+					$vision = filter_var( $raw_caps['vision'], FILTER_VALIDATE_BOOLEAN );
+				}
+
+				if ( isset( $raw_caps['trained_for_tool_use'] ) ) {
+					$tool_use = filter_var( $raw_caps['trained_for_tool_use'], FILTER_VALIDATE_BOOLEAN );
+				}
 			}
 
-			$capabilities_map[ $model_key ] = [ 'reasoning' => $reasoning ];
+			$capabilities_map[ $model_key ] = [
+				'reasoning'            => $reasoning,
+				'vision'               => $vision,
+				'trained_for_tool_use' => $tool_use,
+			];
 		}
 
 		wp_send_json_success( $capabilities_map );
