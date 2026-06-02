@@ -24,16 +24,12 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP              = 'connector-for-lmstudio-settings';
-	private const OPTION_NAME               = 'connector_for_lmstudio_settings';
-	private const PAGE_SLUG                 = 'connector-for-lmstudio';
-	private const SECTION_ID                = 'connector_for_lmstudio_main';
-	private const AJAX_ACTION               = 'connector_for_lmstudio_list_models';
-	private const NONCE_ACTION              = 'connector_for_lmstudio_nonce';
-	private const AJAX_ACTION_CAPABILITIES  = 'connector_for_lmstudio_model_capabilities';
-	private const NONCE_ACTION_CAPABILITIES = 'connector_for_lmstudio_capabilities_nonce';
-	private const KEY_MODEL                 = 'model';
-	private const KEY_REASONING             = 'reasoning';
+	private const OPTION_GROUP  = 'connector-for-lmstudio-settings';
+	private const OPTION_NAME   = 'connector_for_lmstudio_settings';
+	private const PAGE_SLUG     = 'connector-for-lmstudio';
+	private const SECTION_ID    = 'connector_for_lmstudio_main';
+	private const KEY_MODEL     = 'model';
+	private const KEY_REASONING = 'reasoning';
 
 	/**
 	 * Initializes the settings.
@@ -44,8 +40,7 @@ class LMStudioSettings {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_menu', [ $this, 'register_settings_screen' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_settings_script' ] );
-		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_list_models' ] );
-		add_action( 'wp_ajax_' . self::AJAX_ACTION_CAPABILITIES, [ $this, 'ajax_model_capabilities' ] );
+		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 	}
 
 	/**
@@ -346,32 +341,64 @@ class LMStudioSettings {
 			'connector-for-lmstudio-settings',
 			'ConnectorForLMStudioSettings',
 			[
-				'ajaxUrl'             => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
-				'capabilitiesAjaxUrl' => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION_CAPABILITIES . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION_CAPABILITIES ) ),
-				'selectedModel'       => self::get_selected_model(),
-				'selectedReasoning'   => self::get_selected_reasoning(),
-				'svgs'                => $svgs,
+				'selectedModel'     => self::get_selected_model(),
+				'selectedReasoning' => self::get_selected_reasoning(),
+				'svgs'              => $svgs,
 			]
 		);
 	}
 
 	/**
-	 * Handles the AJAX request to list available LM Studio models.
+	 * Registers the REST API routes.
 	 *
 	 * @since 1.0.0
 	 */
-	public function ajax_list_models(): void {
-		check_ajax_referer( self::NONCE_ACTION );
+	public function register_rest_routes(): void {
+		register_rest_route(
+			'connector-for-lmstudio/v1',
+			'/models',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_models_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
-		}
+		register_rest_route(
+			'connector-for-lmstudio/v1',
+			'/capabilities',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_capabilities_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
+	}
 
+	/**
+	 * Checks permissions for the REST API endpoints.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_rest_permissions(): bool {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * REST API endpoint to retrieve available models.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return \WP_REST_Response The REST response.
+	 */
+	public function get_models_endpoint(): \WP_REST_Response {
 		$provider_id = 'lmstudio';
 		$registry    = AiClient::defaultRegistry();
 
 		if ( ! $registry->hasProvider( $provider_id ) ) {
-			wp_send_json_error( __( 'AI provider not found.', 'connector-for-lmstudio' ), 404 );
+			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'connector-for-lmstudio' ) ], 404 );
 		}
 
 		$provider_classname = $registry->getProviderClassName( $provider_id );
@@ -380,17 +407,22 @@ class LMStudioSettings {
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$provider_availability = $provider_classname::availability();
 			if ( ! $provider_availability->isConfigured() ) {
-				wp_send_json_error( __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ), 400 );
+				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ) ], 400 );
 			}
 
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$model_metadata_directory = $provider_classname::modelMetadataDirectory();
 			$model_metadata_objects   = $model_metadata_directory->listModelMetadata();
 
-			wp_send_json_success( $model_metadata_objects );
+			return new \WP_REST_Response( $model_metadata_objects, 200 );
 		} catch ( \Throwable $e ) {
-			/* translators: %s: Error message. */
-			wp_send_json_error( sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ), 500 );
+			return new \WP_REST_Response(
+				[
+					// translators: %s: Error message.
+					'message' => sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ),
+				],
+				500
+			);
 		}
 	}
 
@@ -473,20 +505,13 @@ class LMStudioSettings {
 	}
 
 	/**
-	 * Handles the AJAX request to return per-model reasoning capabilities.
-	 *
-	 * Queries the LM Studio /api/v1/models endpoint directly and returns a map
-	 * of model key → reasoning capability object.
+	 * REST API endpoint to retrieve per-model capabilities.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @return \WP_REST_Response The REST response.
 	 */
-	public function ajax_model_capabilities(): void {
-		check_ajax_referer( self::NONCE_ACTION_CAPABILITIES );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
-		}
-
+	public function get_capabilities_endpoint(): \WP_REST_Response {
 		$url = \rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
@@ -498,14 +523,14 @@ class LMStudioSettings {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( $response->get_error_message(), 500 );
+			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 500 );
 		}
 
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || ! isset( $data['models'] ) || ! is_array( $data['models'] ) ) {
-			wp_send_json_error( __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ), 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ) ], 500 );
 		}
 
 		$capabilities_map = [];
@@ -560,7 +585,7 @@ class LMStudioSettings {
 			];
 		}
 
-		wp_send_json_success( $capabilities_map );
+		return new \WP_REST_Response( $capabilities_map, 200 );
 	}
 
 	/**
