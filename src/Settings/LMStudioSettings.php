@@ -489,7 +489,7 @@ class LMStudioSettings {
 				<legend class="screen-reader-text">
 					<?php esc_html_e( 'Reasoning', 'connector-for-lmstudio' ); ?>
 				</legend>
-				<!-- Radio buttons injected by settings.js -->
+				<!-- Radio buttons injected by assets/admin/settings/index.ts -->
 			</fieldset>
 			<p class="description">
 				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
