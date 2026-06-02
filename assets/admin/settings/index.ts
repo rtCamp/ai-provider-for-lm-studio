@@ -57,6 +57,28 @@ let modelCapabilitiesMap: Record<string, ModelCapabilities> = {};
 // Safely retrieve the settings passed from WordPress PHP.
 const settings = window.ConnectorForLMStudioSettings || {};
 
+// SVG URLs passed from PHP via wp_localize_script.
+const SVGS = settings.svgs || {};
+
+/**
+ * Creates an <img> element pointing to the SVG asset file.
+ *
+ * @param {string} name The SVG identifier.
+ */
+const getSVGElement = ( name: string ): HTMLImageElement | null => {
+	const url = SVGS[ name as keyof typeof SVGS ];
+	if ( ! url ) {
+		return null;
+	}
+	const img = document.createElement( 'img' );
+	img.src = url;
+	img.alt = '';
+	img.width = 24;
+	img.height = 24;
+	img.setAttribute( 'aria-hidden', 'true' );
+	return img;
+};
+
 /**
  * Helper function to extract Model ID safely from response.
  *
@@ -121,11 +143,9 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.vision ) {
 		const visionBadge = document.createElement( 'span' );
 		visionBadge.className = 'lmstudio-cap-badge lmstudio-cap-vision';
-		if ( settings.svgs?.vision ) {
-			const img = document.createElement( 'img' );
-			img.src = settings.svgs.vision;
-			img.alt = '';
-			visionBadge.appendChild( img );
+		const svg = getSVGElement( 'vision' );
+		if ( svg ) {
+			visionBadge.appendChild( svg );
 		}
 		visionBadge.appendChild( document.createTextNode( __( 'Vision', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( visionBadge );
@@ -135,11 +155,9 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.trained_for_tool_use ) {
 		const toolBadge = document.createElement( 'span' );
 		toolBadge.className = 'lmstudio-cap-badge lmstudio-cap-tools';
-		if ( settings.svgs?.tools ) {
-			const img = document.createElement( 'img' );
-			img.src = settings.svgs.tools;
-			img.alt = '';
-			toolBadge.appendChild( img );
+		const svg = getSVGElement( 'tools' );
+		if ( svg ) {
+			toolBadge.appendChild( svg );
 		}
 		toolBadge.appendChild( document.createTextNode( __( 'Tool Calling', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( toolBadge );
@@ -154,11 +172,9 @@ const renderCapabilitiesBadges = (): void => {
 	) {
 		const reasoningBadge = document.createElement( 'span' );
 		reasoningBadge.className = 'lmstudio-cap-badge lmstudio-cap-reasoning';
-		if ( settings.svgs?.reasoning ) {
-			const img = document.createElement( 'img' );
-			img.src = settings.svgs.reasoning;
-			img.alt = '';
-			reasoningBadge.appendChild( img );
+		const svg = getSVGElement( 'reasoning' );
+		if ( svg ) {
+			reasoningBadge.appendChild( svg );
 		}
 		reasoningBadge.appendChild( document.createTextNode( __( 'Reasoning', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( reasoningBadge );
@@ -335,11 +351,9 @@ const renderModels = (
 	if ( models.length === 0 ) {
 		const noModelsBadge = document.createElement( 'span' );
 		noModelsBadge.className = 'lmstudio-loader-badge lmstudio-error-badge';
-		if ( settings.svgs?.error ) {
-			const img = document.createElement( 'img' );
-			img.src = settings.svgs.error;
-			img.alt = '';
-			noModelsBadge.appendChild( img );
+		const svg = getSVGElement( 'error' );
+		if ( svg ) {
+			noModelsBadge.appendChild( svg );
 		}
 		noModelsBadge.appendChild( document.createTextNode( __( 'No models found', 'connector-for-lmstudio' ) ) );
 		status.innerHTML = '';
@@ -396,11 +410,9 @@ const renderModels = (
 	);
 	const successBadge = document.createElement( 'span' );
 	successBadge.className = 'lmstudio-loader-badge lmstudio-success-badge';
-	if ( settings.svgs?.success ) {
-		const img = document.createElement( 'img' );
-		img.src = settings.svgs.success;
-		img.alt = '';
-		successBadge.appendChild( img );
+	const svg = getSVGElement( 'success' );
+	if ( svg ) {
+		successBadge.appendChild( svg );
 	}
 	successBadge.appendChild( document.createTextNode( countText ) );
 	status.innerHTML = '';
@@ -426,11 +438,9 @@ const renderError = ( message: string ): void => {
 	const errorBadge = document.createElement( 'span' );
 	errorBadge.className = 'lmstudio-loader-badge lmstudio-error-badge';
 	errorBadge.title = message;
-	if ( settings.svgs?.error ) {
-		const img = document.createElement( 'img' );
-		img.src = settings.svgs.error;
-		img.alt = '';
-		errorBadge.appendChild( img );
+	const svg = getSVGElement( 'error' );
+	if ( svg ) {
+		errorBadge.appendChild( svg );
 	}
 	errorBadge.appendChild( document.createTextNode( __( 'Connection failed', 'connector-for-lmstudio' ) ) );
 	status.innerHTML = '';

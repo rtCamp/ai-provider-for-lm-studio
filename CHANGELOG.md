@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.0
+- Initial release of the Connector for LM Studio plugin.
+- LM Studio REST API model discovery and text generation support.
+- Multimodal (vision) input support for vision-capable models.
+- Admin settings page for host URL and default model configuration.
+- Automatic localhost allowlisting and extended HTTP timeout for local inference.
+
+
 ## 1.0.0
 
 - Initial public release
