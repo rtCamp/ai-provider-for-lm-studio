@@ -318,22 +318,28 @@ class LMStudioSettings {
 		);
 		wp_style_add_data( 'connector-for-lmstudio-settings', 'rtl', 'replace' );
 
-		$svgs      = [];
-		$svg_files = [
-			'vision'    => 'assets/images/vision.svg',
-			'tools'     => 'assets/images/tools.svg',
-			'reasoning' => 'assets/images/reasoning.svg',
-			'error'     => 'assets/images/error.svg',
-			'success'   => 'assets/images/success.svg',
-		];
+		$cache_key = 'connector_for_lmstudio_svgs_' . ( is_string( $version ) ? $version : 'default' );
+		$svgs      = wp_cache_get( $cache_key, 'connector-for-lmstudio' );
 
-		foreach ( $svg_files as $key => $rel_path ) {
-			$full_path = $plugin_dir . $rel_path;
-			if ( ! file_exists( $full_path ) ) {
-				continue;
+		if ( false === $svgs ) {
+			$svgs      = [];
+			$svg_files = [
+				'vision'    => 'assets/images/vision.svg',
+				'tools'     => 'assets/images/tools.svg',
+				'reasoning' => 'assets/images/reasoning.svg',
+				'error'     => 'assets/images/error.svg',
+				'success'   => 'assets/images/success.svg',
+			];
+
+			foreach ( $svg_files as $key => $rel_path ) {
+				$full_path = $plugin_dir . $rel_path;
+				if ( ! file_exists( $full_path ) ) {
+					continue;
+				}
+				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
+				$svgs[ $key ] = file_get_contents( $full_path );
 			}
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
-			$svgs[ $key ] = file_get_contents( $full_path );
+			wp_cache_set( $cache_key, $svgs, 'connector-for-lmstudio' );
 		}
 
 		wp_localize_script(
