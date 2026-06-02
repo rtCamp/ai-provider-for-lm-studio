@@ -194,7 +194,8 @@
 		box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1), 0 1px 2px rgba(99, 102, 241, 0.05) !important;
 		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
 
-		&:hover, &:focus {
+		&:hover,
+		&:focus {
 			background: var(--lms-primary-hover) !important;
 			border-color: var(--lms-primary-hover) !important;
 			box-shadow: 0 4px 6px rgba(99, 102, 241, 0.15), 0 2px 4px rgba(99, 102, 241, 0.1) !important;
@@ -394,7 +395,7 @@
 		}
 
 		/* Keyboard focus state styling */
-		input[type="radio"]:focus-visible + .lmstudio-card-header .lmstudio-radio-indicator {
+		input[type="radio"]:focus-visible+.lmstudio-card-header .lmstudio-radio-indicator {
 			outline: 2px solid var(--lms-primary);
 			outline-offset: 3px;
 		}
@@ -517,21 +518,36 @@
 
 @keyframes lmsFadeIn {
 
-	from { opacity: 0; transform: translateY(4px); }
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
 
-	to { opacity: 1; transform: translateY(0); }
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 @keyframes lmsSpin {
 
-	0% { transform: rotate(0deg); }
+	0% {
+		transform: rotate(0deg);
+	}
 
-	100% { transform: rotate(360deg); }
+	100% {
+		transform: rotate(360deg);
+	}
 }
 
 @keyframes lmsPulse {
 
-	0%, 100% { opacity: 1; }
+	0%,
+	100% {
+		opacity: 1;
+	}
 
-	50% { opacity: 0.65; }
+	50% {
+		opacity: 0.65;
+	}
 }

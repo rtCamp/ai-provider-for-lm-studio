@@ -189,6 +189,20 @@ class LMStudioSettings {
 						settings_fields( self::OPTION_GROUP );
 						do_settings_sections( self::PAGE_SLUG );
 						?>
+
+						<div class="lmstudio-alert lmstudio-alert-info">
+							<div class="lmstudio-alert-icon">
+								<img src="<?php echo esc_url( plugins_url( 'assets/images/info.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-alert-icon-img" />
+							</div>
+							<div class="lmstudio-alert-content">
+								<p class="lmstudio-alert-description">
+									<?php
+									echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'connector-for-lmstudio' );
+									?>
+								</p>
+							</div>
+						</div>
+
 						<div class="lmstudio-form-actions">
 							<?php submit_button(); ?>
 						</div>
@@ -449,18 +463,6 @@ class LMStudioSettings {
 			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
 			value="<?php echo esc_attr( $current_reasoning ); ?>"
 		/>
-		<div class="lmstudio-alert lmstudio-alert-info">
-			<div class="lmstudio-alert-icon">
-				<img src="<?php echo esc_url( plugins_url( 'assets/images/info.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-alert-icon-img" />
-			</div>
-			<div class="lmstudio-alert-content">
-				<p class="lmstudio-alert-description">
-					<?php
-					echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'connector-for-lmstudio' );
-					?>
-				</p>
-			</div>
-		</div>
 		<?php
 	}
 

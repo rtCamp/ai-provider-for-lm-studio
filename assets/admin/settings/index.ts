@@ -195,6 +195,10 @@ const renderReasoning = ( savedReasoning: string ): void => {
 	) {
 		container.classList.remove( 'lmstudio-visible' );
 		container.style.display = 'none';
+		const tr = container.closest( 'tr' );
+		if ( tr ) {
+			tr.style.display = 'none';
+		}
 		return;
 	}
 
@@ -281,6 +285,10 @@ const renderReasoning = ( savedReasoning: string ): void => {
 	requestAnimationFrame( () => {
 		container.classList.add( 'lmstudio-visible' );
 	} );
+	const tr = container.closest( 'tr' );
+	if ( tr ) {
+		tr.style.display = '';
+	}
 };
 
 /**
