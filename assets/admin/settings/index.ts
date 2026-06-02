@@ -8,7 +8,6 @@
 import './style.scss';
 import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
-import { escapeAttribute } from '@wordpress/escape-html';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 // Type definitions to help TypeScript understand the data structures.
@@ -122,7 +121,13 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.vision ) {
 		const visionBadge = document.createElement( 'span' );
 		visionBadge.className = 'lmstudio-cap-badge lmstudio-cap-vision';
-		visionBadge.innerHTML = `${ settings.svgs?.vision || '' } ${ __( 'Vision', 'connector-for-lmstudio' ) }`;
+		if ( settings.svgs?.vision ) {
+			const img = document.createElement( 'img' );
+			img.src = settings.svgs.vision;
+			img.alt = '';
+			visionBadge.appendChild( img );
+		}
+		visionBadge.appendChild( document.createTextNode( __( 'Vision', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( visionBadge );
 	}
 
@@ -130,7 +135,13 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.trained_for_tool_use ) {
 		const toolBadge = document.createElement( 'span' );
 		toolBadge.className = 'lmstudio-cap-badge lmstudio-cap-tools';
-		toolBadge.innerHTML = `${ settings.svgs?.tools || '' } ${ __( 'Tool Calling', 'connector-for-lmstudio' ) }`;
+		if ( settings.svgs?.tools ) {
+			const img = document.createElement( 'img' );
+			img.src = settings.svgs.tools;
+			img.alt = '';
+			toolBadge.appendChild( img );
+		}
+		toolBadge.appendChild( document.createTextNode( __( 'Tool Calling', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( toolBadge );
 	}
 
@@ -143,7 +154,13 @@ const renderCapabilitiesBadges = (): void => {
 	) {
 		const reasoningBadge = document.createElement( 'span' );
 		reasoningBadge.className = 'lmstudio-cap-badge lmstudio-cap-reasoning';
-		reasoningBadge.innerHTML = `${ settings.svgs?.reasoning || '' } ${ __( 'Reasoning', 'connector-for-lmstudio' ) }`;
+		if ( settings.svgs?.reasoning ) {
+			const img = document.createElement( 'img' );
+			img.src = settings.svgs.reasoning;
+			img.alt = '';
+			reasoningBadge.appendChild( img );
+		}
+		reasoningBadge.appendChild( document.createTextNode( __( 'Reasoning', 'connector-for-lmstudio' ) ) );
 		badgesContainer.appendChild( reasoningBadge );
 	}
 
@@ -316,10 +333,17 @@ const renderModels = (
 
 	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
-		status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge">
-			${ settings.svgs?.error || '' }
-			${ __( 'No models found', 'connector-for-lmstudio' ) }
-		</span>`;
+		const noModelsBadge = document.createElement( 'span' );
+		noModelsBadge.className = 'lmstudio-loader-badge lmstudio-error-badge';
+		if ( settings.svgs?.error ) {
+			const img = document.createElement( 'img' );
+			img.src = settings.svgs.error;
+			img.alt = '';
+			noModelsBadge.appendChild( img );
+		}
+		noModelsBadge.appendChild( document.createTextNode( __( 'No models found', 'connector-for-lmstudio' ) ) );
+		status.innerHTML = '';
+		status.appendChild( noModelsBadge );
 
 		// If a model was saved previously, keep displaying it so the user does not lose state.
 		if ( selectedModel ) {
@@ -370,10 +394,17 @@ const renderModels = (
 		_n( '%d model loaded', '%d models loaded', models.length, 'connector-for-lmstudio' ),
 		models.length,
 	);
-	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-success-badge">
-		${ settings.svgs?.success || '' }
-		${ countText }
-	</span>`;
+	const successBadge = document.createElement( 'span' );
+	successBadge.className = 'lmstudio-loader-badge lmstudio-success-badge';
+	if ( settings.svgs?.success ) {
+		const img = document.createElement( 'img' );
+		img.src = settings.svgs.success;
+		img.alt = '';
+		successBadge.appendChild( img );
+	}
+	successBadge.appendChild( document.createTextNode( countText ) );
+	status.innerHTML = '';
+	status.appendChild( successBadge );
 
 	// Re-enable input selector once load completes
 	select.disabled = false;
@@ -392,10 +423,18 @@ const renderError = ( message: string ): void => {
 		return;
 	}
 
-	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge" title="${ escapeAttribute( message ) }">
-		${ settings.svgs?.error || '' }
-		${ __( 'Connection failed', 'connector-for-lmstudio' ) }
-	</span>`;
+	const errorBadge = document.createElement( 'span' );
+	errorBadge.className = 'lmstudio-loader-badge lmstudio-error-badge';
+	errorBadge.title = message;
+	if ( settings.svgs?.error ) {
+		const img = document.createElement( 'img' );
+		img.src = settings.svgs.error;
+		img.alt = '';
+		errorBadge.appendChild( img );
+	}
+	errorBadge.appendChild( document.createTextNode( __( 'Connection failed', 'connector-for-lmstudio' ) ) );
+	status.innerHTML = '';
+	status.appendChild( errorBadge );
 };
 
 // Asynchronously load the active models from the local LM Studio server via WordPress REST API.
@@ -413,10 +452,14 @@ const loadModels = ( selectedModel: string ): void => {
 	if ( select ) {
 		select.disabled = true;
 	}
-	status.innerHTML = `<span class="lmstudio-loader-badge">
-		<div class="lmstudio-spinner"></div>
-		${ __( 'Fetching models…', 'connector-for-lmstudio' ) }
-	</span>`;
+	const loadingBadge = document.createElement( 'span' );
+	loadingBadge.className = 'lmstudio-loader-badge';
+	const spinner = document.createElement( 'div' );
+	spinner.className = 'lmstudio-spinner';
+	loadingBadge.appendChild( spinner );
+	loadingBadge.appendChild( document.createTextNode( __( 'Fetching models…', 'connector-for-lmstudio' ) ) );
+	status.innerHTML = '';
+	status.appendChild( loadingBadge );
 
 	apiFetch<LMStudioModel[]>( {
 		path: '/connector-for-lmstudio/v1/models',

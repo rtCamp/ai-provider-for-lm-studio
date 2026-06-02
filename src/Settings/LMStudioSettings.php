@@ -153,7 +153,7 @@ class LMStudioSettings {
 			<div class="lmstudio-settings-card">
 				<div class="lmstudio-settings-header">
 					<div class="lmstudio-header-icon">
-						<img src="<?php echo esc_url( plugins_url( 'assets/images/header-logo.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-header-logo-img" />
+						<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/header-logo.svg' ); ?>" alt="" class="lmstudio-header-logo-img" />
 					</div>
 					<div class="lmstudio-header-content">
 						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -187,7 +187,7 @@ class LMStudioSettings {
 
 						<div class="lmstudio-alert lmstudio-alert-info">
 							<div class="lmstudio-alert-icon">
-								<img src="<?php echo esc_url( plugins_url( 'assets/images/info.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-alert-icon-img" />
+								<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/info.svg' ); ?>" alt="" class="lmstudio-alert-icon-img" />
 							</div>
 							<div class="lmstudio-alert-content">
 								<p class="lmstudio-alert-description">
@@ -299,7 +299,7 @@ class LMStudioSettings {
 
 		wp_enqueue_script(
 			'connector-for-lmstudio-settings',
-			plugins_url( 'build/admin/settings.js', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
+			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/settings.js',
 			$dependencies,
 			$version,
 			true
@@ -307,7 +307,7 @@ class LMStudioSettings {
 
 		wp_enqueue_style(
 			'connector-for-lmstudio-settings',
-			plugins_url( 'build/admin/style-settings.css', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
+			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/style-settings.css',
 			[],
 			$version
 		);
@@ -331,8 +331,7 @@ class LMStudioSettings {
 				if ( ! file_exists( $full_path ) ) {
 					continue;
 				}
-				// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
-				$svgs[ $key ] = file_get_contents( $full_path );
+				$svgs[ $key ] = CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . $rel_path;
 			}
 			wp_cache_set( $cache_key, $svgs, 'connector-for-lmstudio' );
 		}
