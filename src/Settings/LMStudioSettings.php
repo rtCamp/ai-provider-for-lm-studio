@@ -24,16 +24,12 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP              = 'connector-for-lmstudio-settings';
-	private const OPTION_NAME               = 'connector_for_lmstudio_settings';
-	private const PAGE_SLUG                 = 'connector-for-lmstudio';
-	private const SECTION_ID                = 'connector_for_lmstudio_main';
-	private const AJAX_ACTION               = 'connector_for_lmstudio_list_models';
-	private const NONCE_ACTION              = 'connector_for_lmstudio_nonce';
-	private const AJAX_ACTION_CAPABILITIES  = 'connector_for_lmstudio_model_capabilities';
-	private const NONCE_ACTION_CAPABILITIES = 'connector_for_lmstudio_capabilities_nonce';
-	private const KEY_MODEL                 = 'model';
-	private const KEY_REASONING             = 'reasoning';
+	private const OPTION_GROUP  = 'connector-for-lmstudio-settings';
+	private const OPTION_NAME   = 'connector_for_lmstudio_settings';
+	private const PAGE_SLUG     = 'connector-for-lmstudio';
+	private const SECTION_ID    = 'connector_for_lmstudio_main';
+	private const KEY_MODEL     = 'model';
+	private const KEY_REASONING = 'reasoning';
 
 	/**
 	 * Initializes the settings.
@@ -44,8 +40,7 @@ class LMStudioSettings {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_menu', [ $this, 'register_settings_screen' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_settings_script' ] );
-		add_action( 'wp_ajax_' . self::AJAX_ACTION, [ $this, 'ajax_list_models' ] );
-		add_action( 'wp_ajax_' . self::AJAX_ACTION_CAPABILITIES, [ $this, 'ajax_model_capabilities' ] );
+		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 	}
 
 	/**
@@ -154,25 +149,61 @@ class LMStudioSettings {
 		}
 		?>
 
-		<div class="wrap" style="max-width: 50rem;">
-			<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-			<p>
-				<?php
-				printf(
-					/* translators: 1: opening anchor tag, 2: closing anchor tag */
-					esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
-					'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '">',
-					'</a>'
-				);
-				?>
-			</p>
-			<form action="options.php" method="post">
-				<?php
-				settings_fields( self::OPTION_GROUP );
-				do_settings_sections( self::PAGE_SLUG );
-				submit_button();
-				?>
-			</form>
+		<div class="wrap lmstudio-settings-wrap">
+			<div class="lmstudio-settings-card">
+				<div class="lmstudio-settings-header">
+					<div class="lmstudio-header-icon">
+						<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/header-logo.svg' ); ?>" alt="" class="lmstudio-header-logo-img" />
+					</div>
+					<div class="lmstudio-header-content">
+						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+						<p class="lmstudio-header-subtitle">
+							<?php
+							echo esc_html__( 'Connect and configure your local LM Studio instance for offline AI capabilities in WordPress.', 'connector-for-lmstudio' );
+							?>
+						</p>
+					</div>
+				</div>
+
+				<div class="lmstudio-settings-body">
+					<div class="lmstudio-connector-info">
+						<p>
+							<?php
+							printf(
+								/* translators: 1: opening anchor tag, 2: closing anchor tag */
+								esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
+								'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '" class="lmstudio-link">',
+								'</a>'
+							);
+							?>
+						</p>
+					</div>
+
+					<form action="options.php" method="post" class="lmstudio-settings-form">
+						<?php
+						settings_fields( self::OPTION_GROUP );
+						do_settings_sections( self::PAGE_SLUG );
+						?>
+
+						<div class="lmstudio-alert lmstudio-alert-info">
+							<div class="lmstudio-alert-icon">
+								<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/info.svg' ); ?>" alt="" class="lmstudio-alert-icon-img" />
+							</div>
+							<div class="lmstudio-alert-content">
+								<p class="lmstudio-alert-description">
+									<?php
+									echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'connector-for-lmstudio' );
+									?>
+								</p>
+							</div>
+						</div>
+
+						<div class="lmstudio-form-actions">
+							<?php submit_button(); ?>
+						</div>
+					</form>
+				</div>
+			</div>
 		</div>
 
 		<?php
@@ -221,21 +252,23 @@ class LMStudioSettings {
 		?>
 
 		<div id="lmstudio-models-container">
-			<select
-				id="<?php echo esc_attr( self::OPTION_NAME . '-model' ); ?>"
-				name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_MODEL . ']' ); ?>"
-				class="regular-text"
-			>
-				<option value="">
-					<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
-				</option>
-				<?php if ( '' !== $current_model ) : ?>
-					<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
-						<?php echo esc_html( $current_model ); ?>
+			<div class="lmstudio-models-row">
+				<select
+					id="<?php echo esc_attr( self::OPTION_NAME . '-model' ); ?>"
+					name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_MODEL . ']' ); ?>"
+					class="regular-text"
+				>
+					<option value="">
+						<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
 					</option>
-				<?php endif; ?>
-			</select>
-			<span id="lmstudio-model-status"></span>
+					<?php if ( '' !== $current_model ) : ?>
+						<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
+							<?php echo esc_html( $current_model ); ?>
+						</option>
+					<?php endif; ?>
+				</select>
+				<span id="lmstudio-model-status"></span>
+			</div>
 		</div>
 		<p class="description">
 			<?php
@@ -257,43 +290,114 @@ class LMStudioSettings {
 			return;
 		}
 
+		$plugin_dir = CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR;
+		$asset_file = $plugin_dir . 'build/admin/settings.asset.php';
+		$asset      = file_exists( $asset_file ) ? require $asset_file : []; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Asset file path is built from a known constant.
+
+		$dependencies = isset( $asset['dependencies'] ) ? $asset['dependencies'] : [];
+		$version      = isset( $asset['version'] ) ? $asset['version'] : false;
+
 		wp_enqueue_script(
 			'connector-for-lmstudio-settings',
-			plugins_url( 'assets/settings-models.js', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ),
-			[],
-			'1.0.0',
+			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/settings.js',
+			$dependencies,
+			$version,
 			true
 		);
+
+		wp_enqueue_style(
+			'connector-for-lmstudio-settings',
+			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/style-settings.css',
+			[],
+			$version
+		);
+		wp_style_add_data( 'connector-for-lmstudio-settings', 'rtl', 'replace' );
+
+		$cache_key = 'connector_for_lmstudio_svgs_' . ( is_string( $version ) ? $version : 'default' );
+		$svgs      = wp_cache_get( $cache_key, 'connector-for-lmstudio' );
+
+		if ( false === $svgs ) {
+			$svgs      = [];
+			$svg_files = [
+				'vision'    => 'assets/images/vision.svg',
+				'tools'     => 'assets/images/tools.svg',
+				'reasoning' => 'assets/images/reasoning.svg',
+				'error'     => 'assets/images/error.svg',
+				'success'   => 'assets/images/success.svg',
+			];
+
+			foreach ( $svg_files as $key => $rel_path ) {
+				$full_path = $plugin_dir . $rel_path;
+				if ( ! file_exists( $full_path ) ) {
+					continue;
+				}
+				$svgs[ $key ] = CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . $rel_path;
+			}
+			wp_cache_set( $cache_key, $svgs, 'connector-for-lmstudio' );
+		}
 
 		wp_localize_script(
 			'connector-for-lmstudio-settings',
 			'ConnectorForLMStudioSettings',
 			[
-				'ajaxUrl'             => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION ) ),
-				'capabilitiesAjaxUrl' => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION_CAPABILITIES . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION_CAPABILITIES ) ),
-				'selectedModel'       => self::get_selected_model(),
-				'selectedReasoning'   => self::get_selected_reasoning(),
+				'selectedModel'     => self::get_selected_model(),
+				'selectedReasoning' => self::get_selected_reasoning(),
+				'svgs'              => $svgs,
 			]
 		);
 	}
 
 	/**
-	 * Handles the AJAX request to list available LM Studio models.
+	 * Registers the REST API routes.
 	 *
 	 * @since 1.0.0
 	 */
-	public function ajax_list_models(): void {
-		check_ajax_referer( self::NONCE_ACTION );
+	public function register_rest_routes(): void {
+		register_rest_route(
+			'connector-for-lmstudio/v1',
+			'/models',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_models_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
-		}
+		register_rest_route(
+			'connector-for-lmstudio/v1',
+			'/capabilities',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_capabilities_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
+	}
 
+	/**
+	 * Checks permissions for the REST API endpoints.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return bool True if the user has permission, false otherwise.
+	 */
+	public function check_rest_permissions(): bool {
+		return current_user_can( 'manage_options' );
+	}
+
+	/**
+	 * REST API endpoint to retrieve available models.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @return \WP_REST_Response The REST response.
+	 */
+	public function get_models_endpoint(): \WP_REST_Response {
 		$provider_id = 'lmstudio';
 		$registry    = AiClient::defaultRegistry();
 
 		if ( ! $registry->hasProvider( $provider_id ) ) {
-			wp_send_json_error( __( 'AI provider not found.', 'connector-for-lmstudio' ), 404 );
+			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'connector-for-lmstudio' ) ], 404 );
 		}
 
 		$provider_classname = $registry->getProviderClassName( $provider_id );
@@ -302,17 +406,22 @@ class LMStudioSettings {
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$provider_availability = $provider_classname::availability();
 			if ( ! $provider_availability->isConfigured() ) {
-				wp_send_json_error( __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ), 400 );
+				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ) ], 400 );
 			}
 
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$model_metadata_directory = $provider_classname::modelMetadataDirectory();
 			$model_metadata_objects   = $model_metadata_directory->listModelMetadata();
 
-			wp_send_json_success( $model_metadata_objects );
+			return new \WP_REST_Response( $model_metadata_objects, 200 );
 		} catch ( \Throwable $e ) {
-			/* translators: %s: Error message. */
-			wp_send_json_error( sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ), 500 );
+			return new \WP_REST_Response(
+				[
+					// translators: %s: Error message.
+					'message' => sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ),
+				],
+				500
+			);
 		}
 	}
 
@@ -374,12 +483,12 @@ class LMStudioSettings {
 		$settings          = self::get_settings();
 		$current_reasoning = isset( $settings[ self::KEY_REASONING ] ) ? (string) $settings[ self::KEY_REASONING ] : '';
 		?>
-		<div id="lmstudio-reasoning-container" style="display:none;">
-			<fieldset id="lmstudio-reasoning-fieldset" style="border:0;margin:0;padding:0;">
+		<div id="lmstudio-reasoning-container" class="lmstudio-reasoning-container">
+			<fieldset id="lmstudio-reasoning-fieldset" class="lmstudio-reasoning-fieldset">
 				<legend class="screen-reader-text">
 					<?php esc_html_e( 'Reasoning', 'connector-for-lmstudio' ); ?>
 				</legend>
-				<!-- Radio buttons injected by settings-models.js -->
+				<!-- Radio buttons injected by assets/admin/settings/index.ts -->
 			</fieldset>
 			<p class="description">
 				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
@@ -391,30 +500,17 @@ class LMStudioSettings {
 			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
 			value="<?php echo esc_attr( $current_reasoning ); ?>"
 		/>
-		<hr/>
-		<p class="description" style="font-style: italic;">
-			<?php
-			echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints', 'connector-for-lmstudio' );
-			?>
-		</p>
 		<?php
 	}
 
 	/**
-	 * Handles the AJAX request to return per-model reasoning capabilities.
-	 *
-	 * Queries the LM Studio /api/v1/models endpoint directly and returns a map
-	 * of model key → reasoning capability object.
+	 * REST API endpoint to retrieve per-model capabilities.
 	 *
 	 * @since 1.0.0
+	 *
+	 * @return \WP_REST_Response The REST response.
 	 */
-	public function ajax_model_capabilities(): void {
-		check_ajax_referer( self::NONCE_ACTION_CAPABILITIES );
-
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( __( 'Insufficient permissions.', 'connector-for-lmstudio' ), 403 );
-		}
-
+	public function get_capabilities_endpoint(): \WP_REST_Response {
 		$url = \rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
@@ -426,14 +522,14 @@ class LMStudioSettings {
 		);
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( $response->get_error_message(), 500 );
+			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 500 );
 		}
 
 		$body = wp_remote_retrieve_body( $response );
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || ! isset( $data['models'] ) || ! is_array( $data['models'] ) ) {
-			wp_send_json_error( __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ), 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ) ], 500 );
 		}
 
 		$capabilities_map = [];
@@ -445,32 +541,50 @@ class LMStudioSettings {
 
 			$model_key = $model['key'];
 			$reasoning = null;
+			$vision    = false;
+			$tool_use  = false;
 
-			if (
-				isset( $model['capabilities']['reasoning'] ) &&
-				is_array( $model['capabilities']['reasoning'] ) &&
-				isset( $model['capabilities']['reasoning']['allowed_options'] ) &&
-				is_array( $model['capabilities']['reasoning']['allowed_options'] ) &&
-				! empty( $model['capabilities']['reasoning']['allowed_options'] )
-			) {
-				$raw       = $model['capabilities']['reasoning'];
-				$allowed   = array_values(
-					array_filter(
-						$raw['allowed_options'],
-						'is_string'
-					)
-				);
-				$default   = isset( $raw['default'] ) && is_string( $raw['default'] ) ? $raw['default'] : '';
-				$reasoning = [
-					'allowed_options' => $allowed,
-					'default'         => $default,
-				];
+			if ( isset( $model['capabilities'] ) && is_array( $model['capabilities'] ) ) {
+				$raw_caps = $model['capabilities'];
+
+				if (
+					isset( $raw_caps['reasoning'] ) &&
+					is_array( $raw_caps['reasoning'] ) &&
+					isset( $raw_caps['reasoning']['allowed_options'] ) &&
+					is_array( $raw_caps['reasoning']['allowed_options'] ) &&
+					! empty( $raw_caps['reasoning']['allowed_options'] )
+				) {
+					$raw       = $raw_caps['reasoning'];
+					$allowed   = array_values(
+						array_filter(
+							$raw['allowed_options'],
+							'is_string'
+						)
+					);
+					$default   = isset( $raw['default'] ) && is_string( $raw['default'] ) ? $raw['default'] : '';
+					$reasoning = [
+						'allowed_options' => $allowed,
+						'default'         => $default,
+					];
+				}
+
+				if ( isset( $raw_caps['vision'] ) ) {
+					$vision = filter_var( $raw_caps['vision'], FILTER_VALIDATE_BOOLEAN );
+				}
+
+				if ( isset( $raw_caps['trained_for_tool_use'] ) ) {
+					$tool_use = filter_var( $raw_caps['trained_for_tool_use'], FILTER_VALIDATE_BOOLEAN );
+				}
 			}
 
-			$capabilities_map[ $model_key ] = [ 'reasoning' => $reasoning ];
+			$capabilities_map[ $model_key ] = [
+				'reasoning'            => $reasoning,
+				'vision'               => $vision,
+				'trained_for_tool_use' => $tool_use,
+			];
 		}
 
-		wp_send_json_success( $capabilities_map );
+		return new \WP_REST_Response( $capabilities_map, 200 );
 	}
 
 	/**

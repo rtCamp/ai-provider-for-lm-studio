@@ -1,6 +1,15 @@
 {
 	"name": "connector-for-lmstudio",
 	"private": true,
+	"files": [
+		"build",
+		"assets/images",
+		"languages",
+		"src",
+		"README.md",
+		"readme.txt",
+		"connector-for-lmstudio.php"
+	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/rtcamp/connector-for-lmstudio.git"
@@ -11,13 +20,8 @@
 	},
 	"dependencies": {
 		"@wordpress/api-fetch": "^7.40.0",
-		"@wordpress/components": "^32.2.0",
-		"@wordpress/element": "^6.40.0",
-		"@wordpress/i18n": "^6.13.0",
-		"@wordpress/icons": "^11.7.0",
-		"dompurify": "^3.3.2",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1"
+		"@wordpress/dom-ready": "^4.47.0",
+		"@wordpress/i18n": "^6.13.0"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.29.0",
@@ -37,14 +41,20 @@
 		"typescript": "^5.9.3"
 	},
 	"scripts": {
+		"build": "wp-scripts build",
+		"dev": "wp-scripts start",
+		"format:js": "wp-scripts format ./assets/admin",
+		"lint:css": "wp-scripts lint-style",
+		"lint:css:fix": "wp-scripts lint-style --fix",
 		"lint:js:fix": "npm run lint:js -- --fix",
 		"lint:js": "wp-scripts lint-js",
 		"lint:js:types": "tsc --noEmit",
 		"lint:php:fix": "composer run-script format",
 		"lint:php:stan": "composer run-script phpstan",
 		"lint:php": "composer run-script lint",
+		"i18n:pot": "wp i18n make-pot . languages/connector-for-lmstudio.pot --domain=connector-for-lmstudio --exclude=node_modules,vendor,tests",
 		"lint": "npm-run-all --parallel lint:*",
-		"plugin-zip": "sh ./bin/plugin-zip.sh"
+		"plugin-zip": "wp-scripts plugin-zip"
 	},
 	"overrides": {
 		"eslint": "^8.57.1",

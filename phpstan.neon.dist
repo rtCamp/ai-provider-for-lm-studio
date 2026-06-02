@@ -31,3 +31,10 @@ parameters:
 				- vendor/
 			analyseAndScan:
 				- node_modules (?)
+
+		ignoreErrors:
+			-
+				message: '#Path in require\(\) .*settings\.asset\.php.* is not a file or it does not exist\.#'
+				path: src/Settings/LMStudioSettings.php
+				reportUnmatched: false
+

@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-04-30T12:30:41+00:00\n"
+"POT-Creation-Date: 2026-06-02T08:25:31+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.11.0\n"
 "X-Domain: connector-for-lmstudio\n"
@@ -57,68 +57,118 @@ msgstr ""
 msgid "LM Studio is a self-hosted platform for managing and deploying large language models (LLMs)."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:76
+#: src/Settings/LMStudioSettings.php:71
 msgid "Host URL"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:85
+#: src/Settings/LMStudioSettings.php:80
 msgid "Available Models"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:94
-#: src/Settings/LMStudioSettings.php:380
+#: src/Settings/LMStudioSettings.php:89
+#: src/Settings/LMStudioSettings.php:490
+#: build/admin/settings.js:1
 msgid "Reasoning"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:108
-#: src/Settings/LMStudioSettings.php:109
+#: src/Settings/LMStudioSettings.php:103
+#: src/Settings/LMStudioSettings.php:104
 msgid "LM Studio Settings"
 msgstr ""
 
+#: src/Settings/LMStudioSettings.php:162
+msgid "Connect and configure your local LM Studio instance for offline AI capabilities in WordPress."
+msgstr ""
+
 #. translators: 1: opening anchor tag, 2: closing anchor tag
-#: src/Settings/LMStudioSettings.php:163
+#: src/Settings/LMStudioSettings.php:174
 msgid "If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s."
 msgstr ""
 
+#: src/Settings/LMStudioSettings.php:195
+msgid "To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints."
+msgstr ""
+
 #. translators: 1: code opening tag, 2: code closing tag
-#: src/Settings/LMStudioSettings.php:203
+#: src/Settings/LMStudioSettings.php:234
 msgid "Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s)."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:230
+#: src/Settings/LMStudioSettings.php:262
+#: build/admin/settings.js:1
 msgid "Use model selected by AI Client"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:242
+#: src/Settings/LMStudioSettings.php:275
 msgid "Choose a default LM Studio model. If left empty, the model requested by AI Client is used."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:289
-#: src/Settings/LMStudioSettings.php:415
-msgid "Insufficient permissions."
-msgstr ""
-
-#: src/Settings/LMStudioSettings.php:296
+#: src/Settings/LMStudioSettings.php:401
 msgid "AI provider not found."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:305
+#: src/Settings/LMStudioSettings.php:410
 msgid "AI provider not configured - missing API credentials."
 msgstr ""
 
 #. translators: %s: Error message.
-#: src/Settings/LMStudioSettings.php:315
+#: src/Settings/LMStudioSettings.php:422
 msgid "Could not list models for provider. Error: %s"
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:385
+#: src/Settings/LMStudioSettings.php:495
 msgid "Control reasoning mode for the selected model. Options depend on the model's capabilities."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:397
-msgid "To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints"
+#: src/Settings/LMStudioSettings.php:533
+msgid "Invalid response from LM Studio."
 msgstr ""
 
-#: src/Settings/LMStudioSettings.php:436
-msgid "Invalid response from LM Studio."
+#: build/admin/settings.js:1
+msgid "Vision"
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Tool Calling"
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Enable full deep thinking reasoning capability for high-quality problem solving."
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Disable reasoning mode for standard fast responses without extended thinking cycles."
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Activate \"%s\" reasoning capability mode."
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "Fetching models…"
+msgstr ""
+
+#: build/admin/settings.js:1
+msgid "No models found"
+msgstr ""
+
+#. translators: %s: Saved model identifier
+#: build/admin/settings.js:3
+#: build/admin/settings.js:5
+msgid "%s (saved)"
+msgstr ""
+
+#. translators: %d: number of models loaded
+#: build/admin/settings.js:6
+msgid "%d model loaded"
+msgid_plural "%d models loaded"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/admin/settings.js:6
+msgid "Connection failed"
+msgstr ""
+
+#: build/admin/settings.js:6
+msgid "Failed to load models."
 msgstr ""

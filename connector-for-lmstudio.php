@@ -29,6 +29,7 @@ define( 'CONNECTOR_FOR_LMSTUDIO_MIN_PHP_VERSION', '7.4' );
 define( 'CONNECTOR_FOR_LMSTUDIO_MIN_WP_VERSION', '7.0' );
 define( 'CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE', __FILE__ );
+define( 'CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
 require_once CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR . 'src/autoload.php';
 
