@@ -13,8 +13,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 // Type definitions to help TypeScript understand the data structures.
 // These match the structure defined by our PHP settings class.
 interface LMStudioSettingsGlobal {
-	ajaxUrl?: string;
-	capabilitiesAjaxUrl?: string;
 	selectedModel?: string;
 	selectedReasoning?: string;
 	svgs?: {
@@ -51,12 +49,6 @@ interface LMStudioModel {
 	id?: string;
 	name?: string;
 	key?: string;
-}
-
-// Wrapper for standard WordPress API responses.
-interface AjaxResponse<T> {
-	success: boolean;
-	data: T | string;
 }
 
 // Cache to store the retrieved reasoning configurations of each model.
@@ -406,7 +398,7 @@ const renderError = ( message: string ): void => {
 };
 
 // Asynchronously load the active models from the local LM Studio server via WordPress REST API.
-const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
+const loadModels = ( selectedModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	const select = document.getElementById(
 		'connector_for_lmstudio_settings-model',
@@ -425,27 +417,20 @@ const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
 		${ __( 'Fetching models…', 'connector-for-lmstudio' ) }
 	</span>`;
 
-	apiFetch<AjaxResponse<LMStudioModel[]>>( {
-		url: ajaxUrl,
+	apiFetch<LMStudioModel[]>( {
+		path: '/connector-for-lmstudio/v1/models',
 	} )
-		.then( ( payload ) => {
-			if ( ! payload || ! payload.success ) {
-				throw new Error(
-					payload && typeof payload.data === 'string'
-						? payload.data
-						: __( 'Failed to load models.', 'connector-for-lmstudio' ),
-				);
-			}
-
-			const models = Array.isArray( payload.data ) ? payload.data : [];
-			renderModels( models, selectedModel );
+		.then( ( models ) => {
+			const modelsList = Array.isArray( models ) ? models : [];
+			renderModels( modelsList, selectedModel );
 		} )
-		.catch( ( error: Error ) => {
+		.catch( ( error: unknown ) => {
 			if ( select ) {
 				select.disabled = false;
 			}
+			const err = error as { message?: string };
 			renderError(
-				error?.message || __( 'Failed to load models.', 'connector-for-lmstudio' ),
+				err?.message || __( 'Failed to load models.', 'connector-for-lmstudio' ),
 			);
 		} );
 };
@@ -454,26 +439,18 @@ const loadModels = ( ajaxUrl: string, selectedModel: string ): void => {
  * Fetches per-model reasoning capabilities and, once available, renders the
  * reasoning radio buttons for the currently selected model.
  *
- * @param {string} capabilitiesAjaxUrl Capabilities Ajax URL.
- * @param {string} savedReasoning      Currently saved reasoning mode.
+ * @param {string} savedReasoning Currently saved reasoning mode.
  */
-const loadCapabilities = (
-	capabilitiesAjaxUrl: string,
-	savedReasoning: string,
-): void => {
-	apiFetch<AjaxResponse<Record<string, ModelCapabilities>>>( {
-		url: capabilitiesAjaxUrl,
+const loadCapabilities = ( savedReasoning: string ): void => {
+	apiFetch<Record<string, ModelCapabilities>>( {
+		path: '/connector-for-lmstudio/v1/capabilities',
 	} )
-		.then( ( payload ) => {
-			if (
-				! payload ||
-				! payload.success ||
-				typeof payload.data !== 'object'
-			) {
+		.then( ( capabilities ) => {
+			if ( ! capabilities || typeof capabilities !== 'object' ) {
 				return;
 			}
 			// Map and cache capabilities in local state, then draw radio controls.
-			modelCapabilitiesMap = payload.data || {};
+			modelCapabilitiesMap = capabilities || {};
 			renderReasoning( savedReasoning );
 			renderCapabilitiesBadges();
 		} )
@@ -484,20 +461,11 @@ const loadCapabilities = (
 
 // Main initializer method that triggers all necessary fetches.
 const init = (): void => {
-	if ( ! settings.ajaxUrl ) {
-		return;
-	}
-
 	// Load active model list first.
-	loadModels( settings.ajaxUrl, settings.selectedModel || '' );
+	loadModels( settings.selectedModel || '' );
 
 	// Fetch dynamic model features if capabilities endpoint is defined.
-	if ( settings.capabilitiesAjaxUrl ) {
-		loadCapabilities(
-			settings.capabilitiesAjaxUrl,
-			settings.selectedReasoning || '',
-		);
-	}
+	loadCapabilities( settings.selectedReasoning || '' );
 };
 
 // Bootstrap initialization using standard WordPress domReady callback.
