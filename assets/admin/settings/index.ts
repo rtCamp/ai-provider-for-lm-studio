@@ -8,6 +8,7 @@
 import './style.scss';
 import apiFetch from '@wordpress/api-fetch';
 import domReady from '@wordpress/dom-ready';
+import { escapeAttribute } from '@wordpress/escape-html';
 import { __, _n, sprintf } from '@wordpress/i18n';
 
 // Type definitions to help TypeScript understand the data structures.
@@ -391,7 +392,7 @@ const renderError = ( message: string ): void => {
 		return;
 	}
 
-	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge" title="${ message }">
+	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge" title="${ escapeAttribute( message ) }">
 		${ settings.svgs?.error || '' }
 		${ __( 'Connection failed', 'connector-for-lmstudio' ) }
 	</span>`;
