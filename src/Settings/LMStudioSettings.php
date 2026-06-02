@@ -158,11 +158,7 @@ class LMStudioSettings {
 			<div class="lmstudio-settings-card">
 				<div class="lmstudio-settings-header">
 					<div class="lmstudio-header-icon">
-						<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-							<path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-						</svg>
+						<img src="<?php echo esc_url( plugins_url( 'assets/images/header-logo.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-header-logo-img" />
 					</div>
 					<div class="lmstudio-header-content">
 						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -308,6 +304,24 @@ class LMStudioSettings {
 		);
 		wp_style_add_data( 'connector-for-lmstudio-settings', 'rtl', 'replace' );
 
+		$svgs      = [];
+		$svg_files = [
+			'vision'    => 'assets/images/vision.svg',
+			'tools'     => 'assets/images/tools.svg',
+			'reasoning' => 'assets/images/reasoning.svg',
+			'error'     => 'assets/images/error.svg',
+			'success'   => 'assets/images/success.svg',
+		];
+
+		foreach ( $svg_files as $key => $rel_path ) {
+			$full_path = $plugin_dir . $rel_path;
+			if ( ! file_exists( $full_path ) ) {
+				continue;
+			}
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents, WordPressVIPMinimum.Performance.FetchingRemoteData.FileGetContentsUnknown
+			$svgs[ $key ] = file_get_contents( $full_path );
+		}
+
 		wp_localize_script(
 			'connector-for-lmstudio-settings',
 			'ConnectorForLMStudioSettings',
@@ -316,6 +330,7 @@ class LMStudioSettings {
 				'capabilitiesAjaxUrl' => esc_url( admin_url( 'admin-ajax.php' ) . '?action=' . self::AJAX_ACTION_CAPABILITIES . '&_wpnonce=' . wp_create_nonce( self::NONCE_ACTION_CAPABILITIES ) ),
 				'selectedModel'       => self::get_selected_model(),
 				'selectedReasoning'   => self::get_selected_reasoning(),
+				'svgs'                => $svgs,
 			]
 		);
 	}
@@ -436,11 +451,7 @@ class LMStudioSettings {
 		/>
 		<div class="lmstudio-alert lmstudio-alert-info">
 			<div class="lmstudio-alert-icon">
-				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M12 16V12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
+				<img src="<?php echo esc_url( plugins_url( 'assets/images/info.svg', CONNECTOR_FOR_LMSTUDIO_PLUGIN_FILE ) ); ?>" alt="" class="lmstudio-alert-icon-img" />
 			</div>
 			<div class="lmstudio-alert-content">
 				<p class="lmstudio-alert-description">

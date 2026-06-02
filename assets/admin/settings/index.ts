@@ -17,6 +17,13 @@ interface LMStudioSettingsGlobal {
 	capabilitiesAjaxUrl?: string;
 	selectedModel?: string;
 	selectedReasoning?: string;
+	svgs?: {
+		vision?: string;
+		tools?: string;
+		reasoning?: string;
+		error?: string;
+		success?: string;
+	};
 }
 
 declare global {
@@ -122,10 +129,7 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.vision ) {
 		const visionBadge = document.createElement( 'span' );
 		visionBadge.className = 'lmstudio-cap-badge lmstudio-cap-vision';
-		visionBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-			<circle cx="12" cy="12" r="3"></circle>
-		</svg> ${ __( 'Vision', 'connector-for-lmstudio' ) }`;
+		visionBadge.innerHTML = `${ settings.svgs?.vision || '' } ${ __( 'Vision', 'connector-for-lmstudio' ) }`;
 		badgesContainer.appendChild( visionBadge );
 	}
 
@@ -133,9 +137,7 @@ const renderCapabilitiesBadges = (): void => {
 	if ( capabilities.trained_for_tool_use ) {
 		const toolBadge = document.createElement( 'span' );
 		toolBadge.className = 'lmstudio-cap-badge lmstudio-cap-tools';
-		toolBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
-		</svg> ${ __( 'Tool Calling', 'connector-for-lmstudio' ) }`;
+		toolBadge.innerHTML = `${ settings.svgs?.tools || '' } ${ __( 'Tool Calling', 'connector-for-lmstudio' ) }`;
 		badgesContainer.appendChild( toolBadge );
 	}
 
@@ -148,10 +150,7 @@ const renderCapabilitiesBadges = (): void => {
 	) {
 		const reasoningBadge = document.createElement( 'span' );
 		reasoningBadge.className = 'lmstudio-cap-badge lmstudio-cap-reasoning';
-		reasoningBadge.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88 2.5 2.5 0 0 1 0-3.88A2.5 2.5 0 0 1 9.5 2z"></path>
-			<path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88 2.5 2.5 0 0 0 0-3.88A2.5 2.5 0 0 0 14.5 2z"></path>
-		</svg> ${ __( 'Reasoning', 'connector-for-lmstudio' ) }`;
+		reasoningBadge.innerHTML = `${ settings.svgs?.reasoning || '' } ${ __( 'Reasoning', 'connector-for-lmstudio' ) }`;
 		badgesContainer.appendChild( reasoningBadge );
 	}
 
@@ -317,11 +316,7 @@ const renderModels = (
 	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
 		status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge">
-			<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-				<circle cx="12" cy="12" r="10"></circle>
-				<line x1="12" y1="8" x2="12" y2="12"></line>
-				<line x1="12" y1="16" x2="12.01" y2="16"></line>
-			</svg>
+			${ settings.svgs?.error || '' }
 			${ __( 'No models found', 'connector-for-lmstudio' ) }
 		</span>`;
 
@@ -375,9 +370,7 @@ const renderModels = (
 		models.length,
 	);
 	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-success-badge">
-		<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-			<polyline points="20 6 9 17 4 12"></polyline>
-		</svg>
+		${ settings.svgs?.success || '' }
 		${ countText }
 	</span>`;
 
@@ -399,11 +392,7 @@ const renderError = ( message: string ): void => {
 	}
 
 	status.innerHTML = `<span class="lmstudio-loader-badge lmstudio-error-badge" title="${ message }">
-		<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-			<circle cx="12" cy="12" r="10"></circle>
-			<line x1="12" y1="8" x2="12" y2="12"></line>
-			<line x1="12" y1="16" x2="12.01" y2="16"></line>
-		</svg>
+		${ settings.svgs?.error || '' }
 		${ __( 'Connection failed', 'connector-for-lmstudio' ) }
 	</span>`;
 };
