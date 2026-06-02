@@ -3,7 +3,7 @@
 :root {
 	--lms-primary: #6366f1;
 	--lms-primary-hover: #4f46e5;
-	--lms-bg-card: #ffffff;
+	--lms-bg-card: #fff;
 	--lms-bg-header: #f8fafc;
 	--lms-border: #e2e8f0;
 	--lms-text-main: #1e293b;
@@ -49,6 +49,7 @@
 	}
 
 	.lmstudio-header-content {
+
 		h1 {
 			font-size: 20px;
 			font-weight: 700;
@@ -102,6 +103,7 @@
 
 // Settings Form Elements
 .lmstudio-settings-form {
+
 	.form-table {
 		margin-top: 0;
 		border-collapse: collapse;
@@ -109,6 +111,7 @@
 
 		tr {
 			border-bottom: 1px solid var(--lms-border);
+
 			&:last-child {
 				border-bottom: none;
 			}
@@ -141,7 +144,7 @@
 	width: 100%;
 	max-width: 28rem;
 	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-	background: #ffffff !important;
+	background: #fff !important;
 	color: var(--lms-text-main) !important;
 	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
 
@@ -286,7 +289,7 @@
 	label.lmstudio-reasoning-card {
 		display: flex;
 		flex-direction: column;
-		background: #ffffff;
+		background: #fff;
 		border: 2px solid var(--lms-border);
 		border-radius: var(--lms-radius-sm);
 		padding: 16px;
@@ -303,25 +306,6 @@
 			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 		}
 
-		&.lmstudio-checked {
-			border-color: var(--lms-primary);
-			background: rgba(99, 102, 241, 0.02);
-			box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
-
-			.lmstudio-radio-indicator {
-				border-color: var(--lms-primary);
-				background: var(--lms-primary);
-
-				&::after {
-					transform: translate(-50%, -50%) scale(1);
-				}
-			}
-
-			.lmstudio-card-title {
-				color: var(--lms-primary);
-			}
-		}
-
 		/* Visually hide default radio but preserve accessibility focus tree */
 		input[type="radio"] {
 			position: absolute !important;
@@ -333,12 +317,6 @@
 			padding: 0 !important;
 			border: 0 !important;
 			white-space: nowrap !important;
-		}
-
-		/* Keyboard focus state styling */
-		input[type="radio"]:focus-visible + .lmstudio-card-header .lmstudio-radio-indicator {
-			outline: 2px solid var(--lms-primary);
-			outline-offset: 3px;
 		}
 
 		.lmstudio-card-header {
@@ -367,7 +345,7 @@
 				width: 6px;
 				height: 6px;
 				border-radius: 50%;
-				background: #ffffff;
+				background: #fff;
 				transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 			}
 		}
@@ -384,6 +362,31 @@
 			color: var(--lms-text-muted);
 			line-height: 1.4;
 		}
+
+		&.lmstudio-checked {
+			border-color: var(--lms-primary);
+			background: rgba(99, 102, 241, 0.02);
+			box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
+
+			.lmstudio-radio-indicator {
+				border-color: var(--lms-primary);
+				background: var(--lms-primary);
+
+				&::after {
+					transform: translate(-50%, -50%) scale(1);
+				}
+			}
+
+			.lmstudio-card-title {
+				color: var(--lms-primary);
+			}
+		}
+
+		/* Keyboard focus state styling */
+		input[type="radio"]:focus-visible + .lmstudio-card-header .lmstudio-radio-indicator {
+			outline: 2px solid var(--lms-primary);
+			outline-offset: 3px;
+		}
 	}
 }
 
@@ -398,6 +401,14 @@
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 	border: 1px solid transparent;
 
+	.lmstudio-alert-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-top: 2px;
+	}
+
 	&.lmstudio-alert-info {
 		background: #f5f3ff;
 		border-color: #ddd6fe;
@@ -406,14 +417,6 @@
 		.lmstudio-alert-icon {
 			color: #7c3aed;
 		}
-	}
-
-	.lmstudio-alert-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		margin-top: 2px;
 	}
 
 	.lmstudio-alert-content {
@@ -494,16 +497,22 @@
 }
 
 @keyframes lmsFadeIn {
+
 	from { opacity: 0; transform: translateY(4px); }
+
 	to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes lmsSpin {
+
 	0% { transform: rotate(0deg); }
+
 	100% { transform: rotate(360deg); }
 }
 
 @keyframes lmsPulse {
+
 	0%, 100% { opacity: 1; }
+
 	50% { opacity: 0.65; }
 }
