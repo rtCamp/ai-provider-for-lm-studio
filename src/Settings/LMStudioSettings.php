@@ -350,7 +350,7 @@ class LMStudioSettings {
 	/**
 	 * Registers the REST API routes.
 	 *
-	 * @since 1.0.0
+	 * @since 1.1.0
 	 */
 	public function register_rest_routes(): void {
 		register_rest_route(
