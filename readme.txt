@@ -3,7 +3,7 @@ Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmitt
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0
-Stable tag:        1.0.0
+Stable tag:        1.1.0
 Requires PHP:      7.4
 Requires Plugins:  ai
 License:           GPL-2.0-or-later
@@ -77,6 +77,14 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 
 == Changelog ==
 
+== 1.1.0 == 
+* Added updated UI for settings page and connector status in Connectors list.
+* Added badages to indicate connection status in Connectors list.
+* Added badages to indicate model capabilities available from endpoint when selecting default model in settings.
+* Added switches to turn on/off reasoning capabilities of the model in LM Studio settings, as it can cause requests to hang indefinitely if turned on.
+* Refactored javascript code to use typescript for better maintainability and type safety.
+* Updated dependencies and fixed minor bugs.
+
 = 1.0.0 =
 
 * Initial release of the Connector for LM Studio plugin.
@@ -96,6 +104,6 @@ Initial release.
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 1.1.0 =
 
-Initial release.
+Updated UI for settings page and connector status in Connectors list.

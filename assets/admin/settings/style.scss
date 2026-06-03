@@ -1,0 +1,565 @@
+// LM Studio Settings Page Styles
+
+:root {
+	--lms-primary: #6366f1;
+	--lms-primary-hover: #4f46e5;
+	--lms-bg-card: #fff;
+	--lms-bg-header: #f8fafc;
+	--lms-border: #e2e8f0;
+	--lms-text-main: #1e293b;
+	--lms-text-muted: #64748b;
+	--lms-radius: 12px;
+	--lms-radius-sm: 8px;
+}
+
+.lmstudio-settings-wrap {
+	max-width: 52rem;
+	margin: 20px 20px 0 0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+// Settings Card Redesign
+.lmstudio-settings-card {
+	background: var(--lms-bg-card);
+	border: 1px solid var(--lms-border);
+	border-radius: var(--lms-radius);
+	box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03), 0 0 0 1px rgba(0, 0, 0, 0.01);
+	overflow: hidden;
+}
+
+.lmstudio-settings-header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	background: var(--lms-bg-header);
+	border-bottom: 1px solid var(--lms-border);
+	padding: 24px 32px;
+
+	.lmstudio-header-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(99, 102, 241, 0.08);
+		color: var(--lms-primary);
+		border-radius: 10px;
+		width: 44px;
+		height: 44px;
+		flex-shrink: 0;
+		box-shadow: 0 2px 8px rgba(99, 102, 241, 0.06);
+
+		.lmstudio-header-logo-img {
+			width: 24px;
+			height: 24px;
+		}
+	}
+
+	.lmstudio-header-content {
+
+		h1 {
+			font-size: 20px;
+			font-weight: 700;
+			color: var(--lms-text-main);
+			margin: 0 0 4px 0;
+			padding: 0;
+			line-height: 1.2;
+		}
+
+		.lmstudio-header-subtitle {
+			font-size: 13px;
+			color: var(--lms-text-muted);
+			margin: 0;
+			padding: 0;
+		}
+	}
+}
+
+.lmstudio-settings-body {
+	padding: 32px;
+}
+
+// Connector Info Bar
+.lmstudio-connector-info {
+	background: #fdfdfd;
+	border: 1px solid var(--lms-border);
+	border-radius: var(--lms-radius-sm);
+	padding: 14px 20px;
+	margin-bottom: 28px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+
+	p {
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--lms-text-main);
+	}
+
+	a.lmstudio-link {
+		color: var(--lms-primary);
+		text-decoration: none;
+		font-weight: 600;
+		transition: color 0.15s ease;
+
+		&:hover {
+			color: var(--lms-primary-hover);
+			text-decoration: underline;
+		}
+	}
+}
+
+// Settings Form Elements
+.lmstudio-settings-form {
+
+	.form-table {
+		margin-top: 0;
+		border-collapse: collapse;
+		width: 100%;
+
+		tr {
+			border-bottom: 1px solid var(--lms-border);
+
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+
+		th {
+			padding: 24px 24px 24px 0;
+			width: 200px;
+			font-weight: 600;
+			color: var(--lms-text-main);
+			font-size: 14px;
+			vertical-align: middle;
+		}
+
+		td {
+			padding: 24px 0;
+			vertical-align: middle;
+		}
+	}
+}
+
+// Styling standard text inputs and select boxes
+.lmstudio-settings-form input[type="url"],
+.lmstudio-settings-form select {
+	border: 1.5px solid var(--lms-border) !important;
+	border-radius: var(--lms-radius-sm) !important;
+	padding: 10px 14px !important;
+	font-size: 14px !important;
+	height: auto !important;
+	width: 100%;
+	max-width: 28rem;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+	background: #fff !important;
+	color: var(--lms-text-main) !important;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+
+	&:focus {
+		border-color: var(--lms-primary) !important;
+		box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+		outline: none !important;
+	}
+
+	&:hover:not(:focus) {
+		border-color: #cbd5e1 !important;
+	}
+}
+
+.lmstudio-settings-form .description {
+	margin-top: 8px !important;
+	color: var(--lms-text-muted) !important;
+	font-size: 13px !important;
+	line-height: 1.4;
+}
+
+// Submit button panel
+.lmstudio-form-actions {
+	padding-top: 24px;
+	border-top: 1px solid var(--lms-border);
+	margin-top: 12px;
+
+	.submit {
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+
+	.button-primary {
+		background: var(--lms-primary) !important;
+		border-color: var(--lms-primary) !important;
+		font-weight: 600 !important;
+		border-radius: var(--lms-radius-sm) !important;
+		padding: 8px 24px !important;
+		height: auto !important;
+		min-height: 40px !important;
+		font-size: 14px !important;
+		box-shadow: 0 2px 4px rgba(99, 102, 241, 0.1), 0 1px 2px rgba(99, 102, 241, 0.05) !important;
+		transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+
+		&:hover,
+		&:focus {
+			background: var(--lms-primary-hover) !important;
+			border-color: var(--lms-primary-hover) !important;
+			box-shadow: 0 4px 6px rgba(99, 102, 241, 0.15), 0 2px 4px rgba(99, 102, 241, 0.1) !important;
+			transform: translateY(-1px);
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+	}
+}
+
+// Loading Status Badge
+.lmstudio-loader-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #f1f5f9;
+	border: 1px solid #e2e8f0;
+	border-radius: 20px;
+	padding: 6px 14px;
+	font-size: 12px;
+	font-weight: 600;
+	color: #475569;
+	vertical-align: middle;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
+	animation: lmsPulse 2s infinite ease-in-out;
+	transition: all 0.3s ease;
+	flex-shrink: 0;
+	white-space: nowrap;
+
+	svg,
+	img {
+		width: 12px;
+		height: 12px;
+		flex-shrink: 0;
+	}
+
+	&.lmstudio-error-badge {
+		background: #fef2f2;
+		border-color: #fca5a5;
+		color: #b91c1c;
+		animation: none;
+	}
+
+	&.lmstudio-success-badge {
+		background: #f0fdf4;
+		border-color: #bbf7d0;
+		color: #15803d;
+		animation: none;
+	}
+
+	.lmstudio-spinner {
+		width: 12px;
+		height: 12px;
+		border: 2px solid #94a3b8;
+		border-top-color: #475569;
+		border-radius: 50%;
+		animation: lmsSpin 0.8s infinite linear;
+	}
+}
+
+// Container for dropdown selection
+#lmstudio-models-container {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.lmstudio-models-row {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	max-width: 28rem;
+	gap: 16px;
+
+	[id="connector_for_lmstudio_settings-model"] {
+		flex: 1;
+		min-width: 0;
+		max-width: 100% !important;
+		width: auto !important;
+	}
+}
+
+// Reasoning Card-like Radios Layout
+.lmstudio-reasoning-container {
+	display: none;
+	margin-top: 16px;
+	background: #fafafa;
+	border: 1px dashed var(--lms-border);
+	border-radius: var(--lms-radius);
+	padding: 20px;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	opacity: 0;
+	transform: translateY(8px);
+
+	&.lmstudio-visible {
+		display: block;
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.lmstudio-reasoning-fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 16px;
+	width: 100%;
+	max-width: 44rem;
+
+	label.lmstudio-reasoning-card {
+		display: flex;
+		flex-direction: column;
+		background: #fff;
+		border: 2px solid var(--lms-border);
+		border-radius: var(--lms-radius-sm);
+		padding: 16px;
+		cursor: pointer;
+		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		position: relative;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+		margin-right: 0 !important;
+		user-select: none;
+
+		&:hover {
+			border-color: #cbd5e1;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+		}
+
+		/* Visually hide default radio but preserve accessibility focus tree */
+		input[type="radio"] {
+			position: absolute !important;
+			clip-path: inset(50%) !important;
+			overflow: hidden !important;
+			width: 1px !important;
+			height: 1px !important;
+			margin: -1px !important;
+			padding: 0 !important;
+			border: 0 !important;
+			white-space: nowrap !important;
+		}
+
+		.lmstudio-card-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 6px;
+			width: 100%;
+		}
+
+		.lmstudio-radio-indicator {
+			width: 16px;
+			height: 16px;
+			border: 2px solid #cbd5e1;
+			border-radius: 50%;
+			position: relative;
+			transition: all 0.2s ease;
+			flex-shrink: 0;
+
+			&::after {
+				content: "";
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%) scale(0);
+				width: 6px;
+				height: 6px;
+				border-radius: 50%;
+				background: #fff;
+				transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+			}
+		}
+
+		.lmstudio-card-title {
+			font-weight: 600;
+			font-size: 14px;
+			color: var(--lms-text-main);
+			transition: color 0.15s ease;
+		}
+
+		.lmstudio-card-desc {
+			font-size: 12px;
+			color: var(--lms-text-muted);
+			line-height: 1.4;
+		}
+
+		&.lmstudio-checked {
+			border-color: var(--lms-primary);
+			background: rgba(99, 102, 241, 0.02);
+			box-shadow: 0 4px 12px rgba(99, 102, 241, 0.06);
+
+			.lmstudio-radio-indicator {
+				border-color: var(--lms-primary);
+				background: var(--lms-primary);
+
+				&::after {
+					transform: translate(-50%, -50%) scale(1);
+				}
+			}
+
+			.lmstudio-card-title {
+				color: var(--lms-primary);
+			}
+		}
+
+		/* Keyboard focus state styling */
+		input[type="radio"]:focus-visible+.lmstudio-card-header .lmstudio-radio-indicator {
+			outline: 2px solid var(--lms-primary);
+			outline-offset: 3px;
+		}
+	}
+}
+
+// Capabilities Badges Row Redesign
+.lmstudio-capabilities-badges-container {
+	display: none;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 12px;
+	margin-bottom: 2px;
+	animation: lmsFadeIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+	width: 100%;
+}
+
+.lmstudio-cap-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: 6px;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 600;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+	border: 1.5px solid transparent;
+	transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	user-select: none;
+
+	svg,
+	img {
+		flex-shrink: 0;
+		width: 12px;
+		height: 12px;
+	}
+
+	&.lmstudio-cap-vision {
+		background: #eff6ff;
+		border-color: #bfdbfe;
+		color: #1e40af;
+
+		&:hover {
+			background: #dbeafe;
+			border-color: #93c5fd;
+			transform: translateY(-0.5px);
+		}
+	}
+
+	&.lmstudio-cap-tools {
+		background: #f0fdf4;
+		border-color: #bbf7d0;
+		color: #166534;
+
+		&:hover {
+			background: #dcfce7;
+			border-color: #86efac;
+			transform: translateY(-0.5px);
+		}
+	}
+
+	&.lmstudio-cap-reasoning {
+		background: #faf5ff;
+		border-color: #e9d5ff;
+		color: #6b21a8;
+
+		&:hover {
+			background: #f3e8ff;
+			border-color: #d8b4fe;
+			transform: translateY(-0.5px);
+		}
+	}
+}
+
+// Notice Alerts Styling
+.lmstudio-alert {
+	display: flex;
+	align-items: flex-start;
+	gap: 16px;
+	border-radius: var(--lms-radius);
+	padding: 20px;
+	margin-top: 28px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+	border: 1px solid transparent;
+
+	.lmstudio-alert-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-top: 2px;
+
+		svg,
+		.lmstudio-alert-icon-img {
+			width: 20px;
+			height: 20px;
+		}
+	}
+
+	&.lmstudio-alert-info {
+		background: #f5f3ff;
+		border-color: #ddd6fe;
+		color: #5b21b6;
+
+		.lmstudio-alert-icon {
+			color: #7c3aed;
+		}
+	}
+
+	.lmstudio-alert-content {
+		flex-grow: 1;
+
+		.lmstudio-alert-description {
+			margin: 0;
+			font-size: 13px;
+			line-height: 1.6;
+			font-weight: 500;
+		}
+	}
+}
+
+@keyframes lmsFadeIn {
+
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes lmsSpin {
+
+	0% {
+		transform: rotate(0deg);
+	}
+
+	100% {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes lmsPulse {
+
+	0%,
+	100% {
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.65;
+	}
+}
