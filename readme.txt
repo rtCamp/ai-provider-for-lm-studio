@@ -3,9 +3,8 @@ Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmitt
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0
-Stable tag:        1.1.0
+Stable tag:        1.1.1
 Requires PHP:      7.4
-Requires Plugins:  ai
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -75,7 +74,15 @@ Additionally make sure to turn off **thinking** ability of model in LM Studio se
 
 Any LLM-type model loaded in LM Studio is supported. Vision-capable models also support image input.
 
+== Source Code ==
+
+The source code is available on <a href="https://github.com/rtCamp/connector-for-lmstudio">GitHub</a>.
+
 == Changelog ==
+
+== 1.1.1 ==
+* Remove AI from required plugin header.
+* Added github source code information in readme.txt
 
 == 1.1.0 == 
 * Added updated UI for settings page and connector status in Connectors list.

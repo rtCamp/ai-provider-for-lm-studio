@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+- Remove AI from required plugin header.
+- Added github source code information in readme.txt
+
 ## 1.1.0
 - Initial release of the Connector for LM Studio plugin.
 - LM Studio REST API model discovery and text generation support.
