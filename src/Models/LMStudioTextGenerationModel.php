@@ -326,7 +326,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		$text = trim( $text );
 
 		// Remove markdown code blocks if present.
-		if ( str_starts_with( $text, '```' ) ) {
+		if ( 0 === strpos( $text, '```' ) ) {
 			$text = (string) preg_replace( '/^```[a-zA-Z]*\s*/', '', $text );
 			$text = (string) preg_replace( '/\s*```$/', '', $text );
 			$text = trim( $text );
