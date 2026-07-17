@@ -90,7 +90,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		$output_schema    = $this->getConfig()->getOutputSchema();
 
 		if ( 'application/json' === $output_mime_type ) {
-			$schema_instruction  = "\n\nCRITICAL: You must return your response ONLY as a JSON object matching the following JSON schema:\n";
+			$schema_instruction = "\n\nCRITICAL: You must return your response ONLY as a JSON object matching the following JSON schema:\n";
 			if ( $output_schema ) {
 				$schema_instruction .= wp_json_encode( $output_schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 			} else {
@@ -325,7 +325,7 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 	private function cleanJsonResponseText( string $text ): string {
 		$text = trim( $text );
 
-		// Remove markdown code blocks if present
+		// Remove markdown code blocks if present.
 		if ( str_starts_with( $text, '```' ) ) {
 			$text = (string) preg_replace( '/^```[a-zA-Z]*\s*/', '', $text );
 			$text = (string) preg_replace( '/\s*```$/', '', $text );
