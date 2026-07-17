@@ -84,8 +84,25 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		];
 
 		$system_instruction = $this->getConfig()->getSystemInstruction();
-		if ( null !== $system_instruction && '' !== trim( $system_instruction ) ) {
-			$params['system_prompt'] = $system_instruction;
+		$system_prompt      = null !== $system_instruction ? trim( $system_instruction ) : '';
+
+		$output_mime_type = $this->getConfig()->getOutputMimeType();
+		$output_schema    = $this->getConfig()->getOutputSchema();
+
+		if ( 'application/json' === $output_mime_type ) {
+			$schema_instruction = "\n\nCRITICAL: You must return your response ONLY as a JSON object matching the following JSON schema:\n";
+			if ( $output_schema ) {
+				$schema_instruction .= wp_json_encode( $output_schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+			} else {
+				$schema_instruction .= "{\n  \"type\": \"object\"\n}";
+			}
+			$schema_instruction .= "\nDo not wrap the response in markdown code blocks or add any other text. Return raw JSON.";
+
+			$system_prompt .= $schema_instruction;
+		}
+
+		if ( '' !== trim( $system_prompt ) ) {
+			$params['system_prompt'] = trim( $system_prompt );
 		}
 
 		$selected_model = LMStudioSettings::get_selected_model();
@@ -268,6 +285,11 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromMissingData( 'LM Studio REST', 'output' );
 		}
 
+		$output_mime_type = $this->getConfig()->getOutputMimeType();
+		if ( 'application/json' === $output_mime_type ) {
+			$text = $this->cleanJsonResponseText( $text );
+		}
+
 		$usage = $this->extractTokenUsageFromResponseData( $data );
 
 		$id = '';
@@ -290,6 +312,27 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 			$this->metadata(),
 			[ 'lmstudio_response' => $data ]
 		);
+	}
+
+	/**
+	 * Cleans JSON response text from markdown block wrappers if present.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $text Raw text.
+	 * @return string Cleaned text.
+	 */
+	private function cleanJsonResponseText( string $text ): string {
+		$text = trim( $text );
+
+		// Remove markdown code blocks if present.
+		if ( 0 === strpos( $text, '```' ) ) {
+			$text = (string) preg_replace( '/^```[a-zA-Z]*\s*/', '', $text );
+			$text = (string) preg_replace( '/\s*```$/', '', $text );
+			$text = trim( $text );
+		}
+
+		return $text;
 	}
 
 	/**
