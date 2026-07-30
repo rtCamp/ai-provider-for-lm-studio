@@ -2,14 +2,14 @@
 /**
  * LM Studio Settings.
  *
- * @package rtcamp/connector-for-lmstudio
+ * @package rtcamp/ai-provider-for-lm-studio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\ConnectorForLMStudio\Settings;
+namespace rtCamp\AIProviderForLMStudio\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,9 +24,9 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP  = 'connector-for-lmstudio-settings';
+	private const OPTION_GROUP  = 'ai-provider-for-lm-studio-settings';
 	private const OPTION_NAME   = 'connector_for_lmstudio_settings';
-	private const PAGE_SLUG     = 'connector-for-lmstudio';
+	private const PAGE_SLUG     = 'ai-provider-for-lm-studio';
 	private const SECTION_ID    = 'connector_for_lmstudio_main';
 	private const KEY_MODEL     = 'model';
 	private const KEY_REASONING = 'reasoning';
@@ -68,7 +68,7 @@ class LMStudioSettings {
 
 		add_settings_field(
 			self::OPTION_NAME . '_host',
-			__( 'Host URL', 'connector-for-lmstudio' ),
+			__( 'Host URL', 'ai-provider-for-lm-studio' ),
 			[ $this, 'render_host_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
@@ -77,7 +77,7 @@ class LMStudioSettings {
 
 		add_settings_field(
 			self::OPTION_NAME . '_model',
-			__( 'Available Models', 'connector-for-lmstudio' ),
+			__( 'Available Models', 'ai-provider-for-lm-studio' ),
 			[ $this, 'render_available_models_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID,
@@ -86,7 +86,7 @@ class LMStudioSettings {
 
 		add_settings_field(
 			self::OPTION_NAME . '_reasoning',
-			__( 'Reasoning', 'connector-for-lmstudio' ),
+			__( 'Reasoning', 'ai-provider-for-lm-studio' ),
 			[ $this, 'render_reasoning_field' ],
 			self::PAGE_SLUG,
 			self::SECTION_ID
@@ -100,8 +100,8 @@ class LMStudioSettings {
 	 */
 	public function register_settings_screen(): void {
 		add_options_page(
-			__( 'LM Studio Settings', 'connector-for-lmstudio' ),
-			__( 'LM Studio Settings', 'connector-for-lmstudio' ),
+			__( 'LM Studio Settings', 'ai-provider-for-lm-studio' ),
+			__( 'LM Studio Settings', 'ai-provider-for-lm-studio' ),
 			'manage_options',
 			self::PAGE_SLUG,
 			[ $this, 'render_screen' ]
@@ -153,13 +153,13 @@ class LMStudioSettings {
 			<div class="lmstudio-settings-card">
 				<div class="lmstudio-settings-header">
 					<div class="lmstudio-header-icon">
-						<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/header-logo.svg' ); ?>" alt="" class="lmstudio-header-logo-img" />
+						<img src="<?php echo esc_url( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/header-logo.svg' ); ?>" alt="" class="lmstudio-header-logo-img" />
 					</div>
 					<div class="lmstudio-header-content">
 						<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
 						<p class="lmstudio-header-subtitle">
 							<?php
-							echo esc_html__( 'Connect and configure your local LM Studio instance for offline AI capabilities in WordPress.', 'connector-for-lmstudio' );
+							echo esc_html__( 'Connect and configure your local LM Studio instance for offline AI capabilities in WordPress.', 'ai-provider-for-lm-studio' );
 							?>
 						</p>
 					</div>
@@ -171,7 +171,7 @@ class LMStudioSettings {
 							<?php
 							printf(
 								/* translators: 1: opening anchor tag, 2: closing anchor tag */
-								esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'connector-for-lmstudio' ),
+								esc_html__( 'If your LM Studio server is configured with authentication, set the API token in %1$sSettings > Connectors%2$s.', 'ai-provider-for-lm-studio' ),
 								'<a href="' . esc_url( admin_url( 'options-connectors.php' ) ) . '" class="lmstudio-link">',
 								'</a>'
 							);
@@ -187,12 +187,12 @@ class LMStudioSettings {
 
 						<div class="lmstudio-alert lmstudio-alert-info">
 							<div class="lmstudio-alert-icon">
-								<img src="<?php echo esc_url( CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/info.svg' ); ?>" alt="" class="lmstudio-alert-icon-img" />
+								<img src="<?php echo esc_url( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_URL . 'assets/images/info.svg' ); ?>" alt="" class="lmstudio-alert-icon-img" />
 							</div>
 							<div class="lmstudio-alert-content">
 								<p class="lmstudio-alert-description">
 									<?php
-									echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'connector-for-lmstudio' );
+									echo esc_html__( 'To access your LM Studio server remotely, you may utilize LM Link or employ free tunneling services such as ngrok or localtunnel. Regardless of the method chosen, it is essential to implement API key authentication to secure your endpoints.', 'ai-provider-for-lm-studio' );
 									?>
 								</p>
 							</div>
@@ -231,7 +231,7 @@ class LMStudioSettings {
 			<?php
 			printf(
 				/* translators: 1: code opening tag, 2: code closing tag */
-				esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'connector-for-lmstudio' ),
+				esc_html__( 'Configure the base URL for the LM Studio server. Leave this empty to use the default (%1$shttp://localhost:1234%2$s).', 'ai-provider-for-lm-studio' ),
 				'<code>',
 				'</code>'
 			);
@@ -259,7 +259,7 @@ class LMStudioSettings {
 					class="regular-text"
 				>
 					<option value="">
-						<?php echo esc_html__( 'Use model selected by AI Client', 'connector-for-lmstudio' ); ?>
+						<?php echo esc_html__( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' ); ?>
 					</option>
 					<?php if ( '' !== $current_model ) : ?>
 						<option value="<?php echo esc_attr( $current_model ); ?>" selected="selected">
@@ -272,7 +272,7 @@ class LMStudioSettings {
 		</div>
 		<p class="description">
 			<?php
-			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'connector-for-lmstudio' );
+			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'ai-provider-for-lm-studio' );
 			?>
 		</p>
 		<?php
@@ -290,7 +290,7 @@ class LMStudioSettings {
 			return;
 		}
 
-		$plugin_dir = CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR;
+		$plugin_dir = AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR;
 		$asset_file = $plugin_dir . 'build/admin/settings.asset.php';
 		$asset      = file_exists( $asset_file ) ? require $asset_file : []; // phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable -- Asset file path is built from a known constant.
 
@@ -298,23 +298,23 @@ class LMStudioSettings {
 		$version      = isset( $asset['version'] ) ? $asset['version'] : false;
 
 		wp_enqueue_script(
-			'connector-for-lmstudio-settings',
-			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/settings.js',
+			'ai-provider-for-lm-studio-settings',
+			AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/settings.js',
 			$dependencies,
 			$version,
 			true
 		);
 
 		wp_enqueue_style(
-			'connector-for-lmstudio-settings',
-			CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/style-settings.css',
+			'ai-provider-for-lm-studio-settings',
+			AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_URL . 'build/admin/style-settings.css',
 			[],
 			$version
 		);
-		wp_style_add_data( 'connector-for-lmstudio-settings', 'rtl', 'replace' );
+		wp_style_add_data( 'ai-provider-for-lm-studio-settings', 'rtl', 'replace' );
 
 		$cache_key = 'connector_for_lmstudio_svgs_' . ( is_string( $version ) ? $version : 'default' );
-		$svgs      = wp_cache_get( $cache_key, 'connector-for-lmstudio' );
+		$svgs      = wp_cache_get( $cache_key, 'ai-provider-for-lm-studio' );
 
 		if ( false === $svgs ) {
 			$svgs      = [];
@@ -331,14 +331,14 @@ class LMStudioSettings {
 				if ( ! file_exists( $full_path ) ) {
 					continue;
 				}
-				$svgs[ $key ] = CONNECTOR_FOR_LMSTUDIO_PLUGIN_URL . $rel_path;
+				$svgs[ $key ] = AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_URL . $rel_path;
 			}
-			wp_cache_set( $cache_key, $svgs, 'connector-for-lmstudio' );
+			wp_cache_set( $cache_key, $svgs, 'ai-provider-for-lm-studio' );
 		}
 
 		wp_localize_script(
-			'connector-for-lmstudio-settings',
-			'ConnectorForLMStudioSettings',
+			'ai-provider-for-lm-studio-settings',
+			'AIProviderForLMStudioSettings',
 			[
 				'selectedModel'     => self::get_selected_model(),
 				'selectedReasoning' => self::get_selected_reasoning(),
@@ -354,7 +354,7 @@ class LMStudioSettings {
 	 */
 	public function register_rest_routes(): void {
 		register_rest_route(
-			'connector-for-lmstudio/v1',
+			'ai-provider-for-lm-studio/v1',
 			'/models',
 			[
 				'methods'             => 'GET',
@@ -364,7 +364,7 @@ class LMStudioSettings {
 		);
 
 		register_rest_route(
-			'connector-for-lmstudio/v1',
+			'ai-provider-for-lm-studio/v1',
 			'/capabilities',
 			[
 				'methods'             => 'GET',
@@ -397,7 +397,7 @@ class LMStudioSettings {
 		$registry    = AiClient::defaultRegistry();
 
 		if ( ! $registry->hasProvider( $provider_id ) ) {
-			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'connector-for-lmstudio' ) ], 404 );
+			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'ai-provider-for-lm-studio' ) ], 404 );
 		}
 
 		$provider_classname = $registry->getProviderClassName( $provider_id );
@@ -406,7 +406,7 @@ class LMStudioSettings {
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
 			$provider_availability = $provider_classname::availability();
 			if ( ! $provider_availability->isConfigured() ) {
-				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'connector-for-lmstudio' ) ], 400 );
+				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'ai-provider-for-lm-studio' ) ], 400 );
 			}
 
 			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
@@ -418,7 +418,7 @@ class LMStudioSettings {
 			return new \WP_REST_Response(
 				[
 					// translators: %s: Error message.
-					'message' => sprintf( __( 'Could not list models for provider. Error: %s', 'connector-for-lmstudio' ), $e->getMessage() ),
+					'message' => sprintf( __( 'Could not list models for provider. Error: %s', 'ai-provider-for-lm-studio' ), $e->getMessage() ),
 				],
 				500
 			);
@@ -486,12 +486,12 @@ class LMStudioSettings {
 		<div id="lmstudio-reasoning-container" class="lmstudio-reasoning-container">
 			<fieldset id="lmstudio-reasoning-fieldset" class="lmstudio-reasoning-fieldset">
 				<legend class="screen-reader-text">
-					<?php esc_html_e( 'Reasoning', 'connector-for-lmstudio' ); ?>
+					<?php esc_html_e( 'Reasoning', 'ai-provider-for-lm-studio' ); ?>
 				</legend>
 				<!-- Radio buttons injected by assets/admin/settings/index.ts -->
 			</fieldset>
 			<p class="description">
-				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'connector-for-lmstudio' ); ?>
+				<?php esc_html_e( 'Control reasoning mode for the selected model. Options depend on the model\'s capabilities.', 'ai-provider-for-lm-studio' ); ?>
 			</p>
 		</div>
 		<input
@@ -511,7 +511,7 @@ class LMStudioSettings {
 	 * @return \WP_REST_Response The REST response.
 	 */
 	public function get_capabilities_endpoint(): \WP_REST_Response {
-		$url = \rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
+		$url = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
 		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
 		$response = wp_remote_get(
@@ -529,7 +529,7 @@ class LMStudioSettings {
 		$data = json_decode( $body, true );
 
 		if ( ! is_array( $data ) || ! isset( $data['models'] ) || ! is_array( $data['models'] ) ) {
-			return new \WP_REST_Response( [ 'message' => __( 'Invalid response from LM Studio.', 'connector-for-lmstudio' ) ], 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Invalid response from LM Studio.', 'ai-provider-for-lm-studio' ) ], 500 );
 		}
 
 		$capabilities_map = [];

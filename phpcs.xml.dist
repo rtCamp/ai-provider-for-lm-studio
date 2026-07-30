@@ -8,7 +8,7 @@
 
 	<!-- What to scan: include any root-level PHP files, and the /inc folder -->
 	<file>./src/</file>
-	<file>./connector-for-lmstudio.php</file>
+	<file>./ai-provider-for-lm-studio.php</file>
 
 	<!-- These are excluded from the above paths.-->
 	<exclude-pattern>**/build/**</exclude-pattern>
@@ -220,7 +220,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="connector-for-lmstudio" />
+				<element value="ai-provider-for-lm-studio" />
 			</property>
 		</properties>
 	</rule>
@@ -229,7 +229,7 @@
 	<rule ref="WordPress.WP.Capabilities">
 		<properties>
 			<property name="custom_capabilities" type="array">
-				<element value="connector-for-lmstudio_manage_settings"/>
+				<element value="ai-provider-for-lm-studio_manage_settings"/>
 			</property>
 		</properties>
 	</rule>

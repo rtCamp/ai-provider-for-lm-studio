@@ -27,7 +27,7 @@ interface LMStudioSettingsGlobal {
 declare global {
 	interface Window {
 		// WordPress exposes this global object to pass saved database settings to our JS.
-		ConnectorForLMStudioSettings?: LMStudioSettingsGlobal;
+		AIProviderForLMStudioSettings?: LMStudioSettingsGlobal;
 	}
 }
 
@@ -55,7 +55,7 @@ interface LMStudioModel {
 let modelCapabilitiesMap: Record<string, ModelCapabilities> = {};
 
 // Safely retrieve the settings passed from WordPress PHP.
-const settings = window.ConnectorForLMStudioSettings || {};
+const settings = window.AIProviderForLMStudioSettings || {};
 
 // SVG URLs passed from PHP via wp_localize_script.
 const SVGS = settings.svgs || {};
@@ -147,7 +147,7 @@ const renderCapabilitiesBadges = (): void => {
 		if ( svg ) {
 			visionBadge.appendChild( svg );
 		}
-		visionBadge.appendChild( document.createTextNode( __( 'Vision', 'connector-for-lmstudio' ) ) );
+		visionBadge.appendChild( document.createTextNode( __( 'Vision', 'ai-provider-for-lm-studio' ) ) );
 		badgesContainer.appendChild( visionBadge );
 	}
 
@@ -159,7 +159,7 @@ const renderCapabilitiesBadges = (): void => {
 		if ( svg ) {
 			toolBadge.appendChild( svg );
 		}
-		toolBadge.appendChild( document.createTextNode( __( 'Tool Calling', 'connector-for-lmstudio' ) ) );
+		toolBadge.appendChild( document.createTextNode( __( 'Tool Calling', 'ai-provider-for-lm-studio' ) ) );
 		badgesContainer.appendChild( toolBadge );
 	}
 
@@ -176,7 +176,7 @@ const renderCapabilitiesBadges = (): void => {
 		if ( svg ) {
 			reasoningBadge.appendChild( svg );
 		}
-		reasoningBadge.appendChild( document.createTextNode( __( 'Reasoning', 'connector-for-lmstudio' ) ) );
+		reasoningBadge.appendChild( document.createTextNode( __( 'Reasoning', 'ai-provider-for-lm-studio' ) ) );
 		badgesContainer.appendChild( reasoningBadge );
 	}
 
@@ -294,12 +294,12 @@ const renderReasoning = ( savedReasoning: string ): void => {
 		const descDiv = document.createElement( 'div' );
 		descDiv.className = 'lmstudio-card-desc';
 		if ( option === 'on' ) {
-			descDiv.textContent = __( 'Enable full deep thinking reasoning capability for high-quality problem solving.', 'connector-for-lmstudio' );
+			descDiv.textContent = __( 'Enable full deep thinking reasoning capability for high-quality problem solving.', 'ai-provider-for-lm-studio' );
 		} else if ( option === 'off' ) {
-			descDiv.textContent = __( 'Disable reasoning mode for standard fast responses without extended thinking cycles.', 'connector-for-lmstudio' );
+			descDiv.textContent = __( 'Disable reasoning mode for standard fast responses without extended thinking cycles.', 'ai-provider-for-lm-studio' );
 		} else {
 			/* translators: %s: reasoning option mode label */
-			descDiv.textContent = sprintf( __( 'Activate "%s" reasoning capability mode.', 'connector-for-lmstudio' ), capitalised );
+			descDiv.textContent = sprintf( __( 'Activate "%s" reasoning capability mode.', 'ai-provider-for-lm-studio' ), capitalised );
 		}
 		label.appendChild( descDiv );
 
@@ -342,7 +342,7 @@ const renderModels = (
 	// Add the placeholder default option allowing fallback to general client model.
 	const defaultOption = document.createElement( 'option' );
 	defaultOption.value = '';
-	defaultOption.textContent = __( 'Use model selected by AI Client', 'connector-for-lmstudio' );
+	defaultOption.textContent = __( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' );
 	select.appendChild( defaultOption );
 
 	let hasSelectedModel = false;
@@ -355,7 +355,7 @@ const renderModels = (
 		if ( svg ) {
 			noModelsBadge.appendChild( svg );
 		}
-		noModelsBadge.appendChild( document.createTextNode( __( 'No models found', 'connector-for-lmstudio' ) ) );
+		noModelsBadge.appendChild( document.createTextNode( __( 'No models found', 'ai-provider-for-lm-studio' ) ) );
 		status.innerHTML = '';
 		status.appendChild( noModelsBadge );
 
@@ -364,7 +364,7 @@ const renderModels = (
 			const selectedOnlyOption = document.createElement( 'option' );
 			selectedOnlyOption.value = selectedModel;
 			/* translators: %s: Saved model identifier */
-			selectedOnlyOption.textContent = sprintf( __( '%s (saved)', 'connector-for-lmstudio' ), selectedModel );
+			selectedOnlyOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedModel );
 			selectedOnlyOption.selected = true;
 			select.appendChild( selectedOnlyOption );
 		}
@@ -397,7 +397,7 @@ const renderModels = (
 		const missingOption = document.createElement( 'option' );
 		missingOption.value = selectedModel;
 		/* translators: %s: Saved model identifier */
-		missingOption.textContent = sprintf( __( '%s (saved)', 'connector-for-lmstudio' ), selectedModel );
+		missingOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedModel );
 		missingOption.selected = true;
 		select.appendChild( missingOption );
 	}
@@ -405,7 +405,7 @@ const renderModels = (
 	// Render the model loaded count beautifully
 	const countText = sprintf(
 		/* translators: %d: number of models loaded */
-		_n( '%d model loaded', '%d models loaded', models.length, 'connector-for-lmstudio' ),
+		_n( '%d model loaded', '%d models loaded', models.length, 'ai-provider-for-lm-studio' ),
 		models.length,
 	);
 	const successBadge = document.createElement( 'span' );
@@ -442,7 +442,7 @@ const renderError = ( message: string ): void => {
 	if ( svg ) {
 		errorBadge.appendChild( svg );
 	}
-	errorBadge.appendChild( document.createTextNode( __( 'Connection failed', 'connector-for-lmstudio' ) ) );
+	errorBadge.appendChild( document.createTextNode( __( 'Connection failed', 'ai-provider-for-lm-studio' ) ) );
 	status.innerHTML = '';
 	status.appendChild( errorBadge );
 };
@@ -467,12 +467,12 @@ const loadModels = ( selectedModel: string ): void => {
 	const spinner = document.createElement( 'div' );
 	spinner.className = 'lmstudio-spinner';
 	loadingBadge.appendChild( spinner );
-	loadingBadge.appendChild( document.createTextNode( __( 'Fetching models…', 'connector-for-lmstudio' ) ) );
+	loadingBadge.appendChild( document.createTextNode( __( 'Fetching models…', 'ai-provider-for-lm-studio' ) ) );
 	status.innerHTML = '';
 	status.appendChild( loadingBadge );
 
 	apiFetch<LMStudioModel[]>( {
-		path: '/connector-for-lmstudio/v1/models',
+		path: '/ai-provider-for-lm-studio/v1/models',
 	} )
 		.then( ( models ) => {
 			const modelsList = Array.isArray( models ) ? models : [];
@@ -484,7 +484,7 @@ const loadModels = ( selectedModel: string ): void => {
 			}
 			const err = error as { message?: string };
 			renderError(
-				err?.message || __( 'Failed to load models.', 'connector-for-lmstudio' ),
+				err?.message || __( 'Failed to load models.', 'ai-provider-for-lm-studio' ),
 			);
 		} );
 };
@@ -497,7 +497,7 @@ const loadModels = ( selectedModel: string ): void => {
  */
 const loadCapabilities = ( savedReasoning: string ): void => {
 	apiFetch<Record<string, ModelCapabilities>>( {
-		path: '/connector-for-lmstudio/v1/capabilities',
+		path: '/ai-provider-for-lm-studio/v1/capabilities',
 	} )
 		.then( ( capabilities ) => {
 			if ( ! capabilities || typeof capabilities !== 'object' ) {

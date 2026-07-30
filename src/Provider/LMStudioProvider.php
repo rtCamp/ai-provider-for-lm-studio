@@ -2,14 +2,14 @@
 /**
  * LM Studio Provider.
  *
- * @package rtcamp/connector-for-lmstudio
+ * @package rtcamp/ai-provider-for-lm-studio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\ConnectorForLMStudio\Provider;
+namespace rtCamp\AIProviderForLMStudio\Provider;
 
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiProvider;
 use WordPress\AiClient\Providers\Contracts\ModelMetadataDirectoryInterface;
@@ -19,8 +19,8 @@ use WordPress\AiClient\Providers\Enums\ProviderTypeEnum;
 use WordPress\AiClient\Providers\Http\Enums\RequestAuthenticationMethod;
 use WordPress\AiClient\Providers\Models\Contracts\ModelInterface;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
-use rtCamp\ConnectorForLMStudio\Metadata\LMStudioModelMetadataDirectory;
-use rtCamp\ConnectorForLMStudio\Models\LMStudioTextGenerationModel;
+use rtCamp\AIProviderForLMStudio\Metadata\LMStudioModelMetadataDirectory;
+use rtCamp\AIProviderForLMStudio\Models\LMStudioTextGenerationModel;
 
 /**
  * Class for the LM Studio provider.
@@ -40,7 +40,7 @@ class LMStudioProvider extends AbstractApiProvider {
 			return rtrim( $host, '/' );
 		}
 
-		$settings = \rtCamp\ConnectorForLMStudio\Settings\LMStudioSettings::get_settings();
+		$settings = \rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings::get_settings();
 		if ( isset( $settings['host'] ) && '' !== $settings['host'] ) {
 			return rtrim( $settings['host'], '/' );
 		}
@@ -89,8 +89,8 @@ class LMStudioProvider extends AbstractApiProvider {
 			ProviderTypeEnum::server(),
 			'https://lmstudio.ai/docs/developer/core/authentication',
 			RequestAuthenticationMethod::apiKey(),
-			__( 'LM Studio is a self-hosted platform for managing and deploying large language models (LLMs).', 'connector-for-lmstudio' ),
-			CONNECTOR_FOR_LMSTUDIO_PLUGIN_DIR . 'assets/images/lmstudio-logo.svg'
+			__( 'LM Studio is a self-hosted platform for managing and deploying large language models (LLMs).', 'ai-provider-for-lm-studio' ),
+			AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'assets/images/lmstudio-logo.svg'
 		);
 	}
 
