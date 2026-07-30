@@ -94,7 +94,7 @@ const getModelId = ( model: LMStudioModel ): string => model?.id || model?.name 
  */
 const getSelectedModelId = (): string => {
 	const select = document.getElementById(
-		'connector_for_lmstudio_settings-model',
+		'ai_provider_for_lm_studio_settings-model',
 	) as HTMLSelectElement | null;
 	return select?.value || '';
 };
@@ -105,7 +105,7 @@ const getSelectedModelId = (): string => {
  */
 const renderCapabilitiesBadges = (): void => {
 	const select = document.getElementById(
-		'connector_for_lmstudio_settings-model',
+		'ai_provider_for_lm_studio_settings-model',
 	) as HTMLSelectElement | null;
 	const container = document.getElementById( 'lmstudio-models-container' );
 
@@ -237,7 +237,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 			: modelDefault;
 
 	const hiddenInput = document.getElementById(
-		'connector_for_lmstudio_settings-reasoning',
+		'ai_provider_for_lm_studio_settings-reasoning',
 	) as HTMLInputElement | null;
 
 	// Sync the hidden form input so it saves correctly when the user submits the settings page.
@@ -255,7 +255,7 @@ const renderReasoning = ( savedReasoning: string ): void => {
 
 		const radio = document.createElement( 'input' );
 		radio.type = 'radio';
-		radio.name = 'connector_for_lmstudio_settings[reasoning]';
+		radio.name = 'ai_provider_for_lm_studio_settings[reasoning]';
 		radio.id = 'lmstudio-reasoning-' + option;
 		radio.value = option;
 		radio.checked = option === effectiveValue;
@@ -328,7 +328,7 @@ const renderModels = (
 	selectedModel: string,
 ): void => {
 	const select = document.getElementById(
-		'connector_for_lmstudio_settings-model',
+		'ai_provider_for_lm_studio_settings-model',
 	) as HTMLSelectElement | null;
 	const status = document.getElementById( 'lmstudio-model-status' );
 
@@ -451,7 +451,7 @@ const renderError = ( message: string ): void => {
 const loadModels = ( selectedModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	const select = document.getElementById(
-		'connector_for_lmstudio_settings-model',
+		'ai_provider_for_lm_studio_settings-model',
 	) as HTMLSelectElement | null;
 
 	if ( ! status ) {

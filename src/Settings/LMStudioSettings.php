@@ -25,9 +25,9 @@ use WordPress\AiClient\AiClient;
 class LMStudioSettings {
 
 	private const OPTION_GROUP  = 'ai-provider-for-lm-studio-settings';
-	private const OPTION_NAME   = 'connector_for_lmstudio_settings';
+	private const OPTION_NAME   = 'ai_provider_for_lm_studio_settings';
 	private const PAGE_SLUG     = 'ai-provider-for-lm-studio';
-	private const SECTION_ID    = 'connector_for_lmstudio_main';
+	private const SECTION_ID    = 'ai_provider_for_lm_studio_main';
 	private const KEY_MODEL     = 'model';
 	private const KEY_REASONING = 'reasoning';
 
@@ -313,7 +313,7 @@ class LMStudioSettings {
 		);
 		wp_style_add_data( 'ai-provider-for-lm-studio-settings', 'rtl', 'replace' );
 
-		$cache_key = 'connector_for_lmstudio_svgs_' . ( is_string( $version ) ? $version : 'default' );
+		$cache_key = 'ai_provider_for_lm_studio_svgs_' . ( is_string( $version ) ? $version : 'default' );
 		$svgs      = wp_cache_get( $cache_key, 'ai-provider-for-lm-studio' );
 
 		if ( false === $svgs ) {
