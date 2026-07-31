@@ -79,11 +79,12 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 
 == Changelog ==
 
-== 1.1.1 ==
+= 1.1.1 =
 * Remove AI from required plugin header.
 * Added github source code information in readme.txt
+* Renames plugin to "AI Provider for LM Studio"
 
-== 1.1.0 == 
+= 1.1.0 =
 * Added updated UI for settings page and connector status in Connectors list.
 * Added badages to indicate connection status in Connectors list.
 * Added badages to indicate model capabilities available from endpoint when selecting default model in settings.
@@ -101,15 +102,6 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 1.1.1 =
 
-Initial release.
-
-* Initial release
-* Connector for LM Studio OpenAI-compatible model discovery and chat completions support
-
-== Upgrade Notice ==
-
-= 1.1.0 =
-
-Updated UI for settings page and connector status in Connectors list.
+* Renames plugin to "AI Provider for LM Studio"
