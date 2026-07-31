@@ -1,5 +1,5 @@
 {
-	"name": "connector-for-lmstudio",
+	"name": "ai-provider-for-lm-studio",
 	"private": true,
 	"files": [
 		"build",
@@ -8,24 +8,24 @@
 		"src",
 		"README.md",
 		"readme.txt",
-		"connector-for-lmstudio.php"
+		"ai-provider-for-lm-studio.php"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/rtcamp/connector-for-lmstudio.git"
+		"url": "https://github.com/rtcamp/ai-provider-for-lm-studio.git"
 	},
 	"engines": {
 		"node": ">=22.0.0",
 		"npm": ">=10.0.0"
 	},
 	"dependencies": {
-		"@wordpress/api-fetch": "^7.40.0",
-		"@wordpress/dom-ready": "^4.47.0",
-		"@wordpress/i18n": "^6.13.0"
+		"@wordpress/api-fetch": "^7.52.0",
+		"@wordpress/dom-ready": "^4.52.0",
+		"@wordpress/i18n": "^6.25.0"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.29.0",
-		"@types/react": "^18.3.28",
+		"@types/react": "^18.3.31",
 		"@types/react-dom": "^18.3.7",
 		"@wordpress/babel-preset-default": "^8.40.0",
 		"@wordpress/browserslist-config": "^6.40.0",
@@ -36,7 +36,7 @@
 		"eslint-plugin-eslint-comments": "^3.2.0",
 		"eslint-plugin-import": "^2.32.0",
 		"eslint-plugin-jest": "^27.9.0",
-		"globals": "^17.3.0",
+		"globals": "^17.8.0",
 		"npm-run-all": "^4.1.5",
 		"typescript": "^5.9.3"
 	},
@@ -52,7 +52,7 @@
 		"lint:php:fix": "composer run-script format",
 		"lint:php:stan": "composer run-script phpstan",
 		"lint:php": "composer run-script lint",
-		"i18n:pot": "wp i18n make-pot . languages/connector-for-lmstudio.pot --domain=connector-for-lmstudio --exclude=node_modules,vendor,tests",
+		"i18n:pot": "wp i18n make-pot . languages/ai-provider-for-lm-studio.pot --domain=ai-provider-for-lm-studio --exclude=node_modules,vendor,tests",
 		"lint": "npm-run-all --parallel lint:*",
 		"plugin-zip": "wp-scripts plugin-zip"
 	},
@@ -60,6 +60,12 @@
 		"eslint": "^8.57.1",
 		"minimatch": ">=3.1.3",
 		"serialize-javascript": ">=7.0.3",
-		"webpack-dev-server@<=5.2.0": ">=5.2.1"
+		"webpack-dev-server@<=5.2.0": ">=5.2.1",
+		"uuid": ">=14.0.0",
+		"js-yaml": "^4.1.2",
+		"markdown-it": "^14.1.0",
+		"@opentelemetry/core": "^2.8.0",
+		"adm-zip": "^0.6.0",
+		"fast-uri" : ">=3.1.3"
 	}
 }

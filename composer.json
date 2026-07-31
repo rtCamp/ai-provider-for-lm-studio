@@ -1,6 +1,6 @@
 {
-    "name": "rtcamp/connector-for-lmstudio",
-		"version": "1.1.0",
+    "name": "rtcamp/ai-provider-for-lm-studio",
+    "version": "1.1.1",
     "description": "LM Studio provider for the PHP AI Client SDK. Works as both a Composer package and WordPress plugin.",
     "license": "GPL-2.0-or-later",
     "keywords": [
@@ -16,10 +16,10 @@
             "homepage": "https://rtcamp.com"
         }
     ],
-    "homepage": "https://github.com/rtcamp/connector-for-lmstudio",
+    "homepage": "https://github.com/rtcamp/ai-provider-for-lm-studio",
     "support": {
-        "issues": "https://github.com/rtcamp/connector-for-lmstudio/issues",
-        "source": "https://github.com/rtcamp/connector-for-lmstudio"
+        "issues": "https://github.com/rtcamp/ai-provider-for-lm-studio/issues",
+        "source": "https://github.com/rtcamp/ai-provider-for-lm-studio"
     },
     "require": {
         "php": ">=7.4"
@@ -41,7 +41,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "rtCamp\\ConnectorForLMStudio\\": "src/"
+            "rtCamp\\AIProviderForLMStudio\\": "src/"
         }
     },
     "require-dev": {

@@ -18,10 +18,10 @@ parameters:
 			min: 80100
 			max: 80400
 		bootstrapFiles:
-				- connector-for-lmstudio.php
+				- ai-provider-for-lm-studio.php
 
 		paths:
-				- connector-for-lmstudio.php
+				- ai-provider-for-lm-studio.php
 				- src/
 		scanDirectories:
 				- vendor/wordpress/php-ai-client/src/

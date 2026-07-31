@@ -1,11 +1,10 @@
-=== Connector for LM Studio ===
+=== AI Provider for LM Studio ===
 Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmittal89
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0
-Stable tag:        1.1.0
+Stable tag:        1.1.1
 Requires PHP:      7.4
-Requires Plugins:  ai
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,11 +27,10 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 == Installation ==
 
-1. Ensure the WordPress AI plugin is installed and activated.
-2. Upload plugin files to `/wp-content/plugins/connector-for-lmstudio/`.
-3. Activate **Connector for LM Studio** through the Plugins menu in WordPress.
-4. Start LM Studio and load a model.
-5. Configure the host URL and default model in **Settings > LM Studio Settings**.
+1. Upload plugin files to `/wp-content/plugins/ai-provider-for-lm-studio/`.
+2. Activate **Connector for LM Studio** through the Plugins menu in WordPress.
+3. Start LM Studio and load a model.
+4. Configure the host URL and default model in **Settings > LM Studio Settings**.
 
 == Screenshots ==
 
@@ -75,9 +73,18 @@ Additionally make sure to turn off **thinking** ability of model in LM Studio se
 
 Any LLM-type model loaded in LM Studio is supported. Vision-capable models also support image input.
 
+== Source Code ==
+
+The source code is available on <a href="https://github.com/rtCamp/ai-provider-for-lm-studio">GitHub</a>.
+
 == Changelog ==
 
-== 1.1.0 == 
+= 1.1.1 =
+* Remove AI from required plugin header.
+* Added github source code information in readme.txt
+* Renames plugin to "AI Provider for LM Studio"
+
+= 1.1.0 =
 * Added updated UI for settings page and connector status in Connectors list.
 * Added badages to indicate connection status in Connectors list.
 * Added badages to indicate model capabilities available from endpoint when selecting default model in settings.
@@ -95,15 +102,6 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 
 == Upgrade Notice ==
 
-= 1.0.0 =
+= 1.1.1 =
 
-Initial release.
-
-* Initial release
-* Connector for LM Studio OpenAI-compatible model discovery and chat completions support
-
-== Upgrade Notice ==
-
-= 1.1.0 =
-
-Updated UI for settings page and connector status in Connectors list.
+* Renames plugin to "AI Provider for LM Studio"
