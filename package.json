@@ -1,5 +1,5 @@
 {
-	"name": "connector-for-lmstudio",
+	"name": "ai-provider-for-lm-studio",
 	"private": true,
 	"files": [
 		"build",
@@ -8,11 +8,11 @@
 		"src",
 		"README.md",
 		"readme.txt",
-		"connector-for-lmstudio.php"
+		"ai-provider-for-lm-studio.php"
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/rtcamp/connector-for-lmstudio.git"
+		"url": "https://github.com/rtcamp/ai-provider-for-lm-studio.git"
 	},
 	"engines": {
 		"node": ">=22.0.0",
@@ -52,7 +52,7 @@
 		"lint:php:fix": "composer run-script format",
 		"lint:php:stan": "composer run-script phpstan",
 		"lint:php": "composer run-script lint",
-		"i18n:pot": "wp i18n make-pot . languages/connector-for-lmstudio.pot --domain=connector-for-lmstudio --exclude=node_modules,vendor,tests",
+		"i18n:pot": "wp i18n make-pot . languages/ai-provider-for-lm-studio.pot --domain=ai-provider-for-lm-studio --exclude=node_modules,vendor,tests",
 		"lint": "npm-run-all --parallel lint:*",
 		"plugin-zip": "wp-scripts plugin-zip"
 	},

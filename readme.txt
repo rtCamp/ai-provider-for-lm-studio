@@ -27,7 +27,7 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 == Installation ==
 
-1. Upload plugin files to `/wp-content/plugins/connector-for-lmstudio/`.
+1. Upload plugin files to `/wp-content/plugins/ai-provider-for-lm-studio/`.
 2. Activate **Connector for LM Studio** through the Plugins menu in WordPress.
 3. Start LM Studio and load a model.
 4. Configure the host URL and default model in **Settings > LM Studio Settings**.
@@ -75,7 +75,7 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 
 == Source Code ==
 
-The source code is available on <a href="https://github.com/rtCamp/connector-for-lmstudio">GitHub</a>.
+The source code is available on <a href="https://github.com/rtCamp/ai-provider-for-lm-studio">GitHub</a>.
 
 == Changelog ==
 

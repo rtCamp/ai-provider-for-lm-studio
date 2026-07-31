@@ -2,14 +2,14 @@
 /**
  * LM Studio Model Metadata Directory.
  *
- * @package rtcamp/connector-for-lmstudio
+ * @package rtCamp\AIProviderForLMStudio
  *
  * @since 1.0.0
  */
 
 declare( strict_types=1 );
 
-namespace rtCamp\ConnectorForLMStudio\Metadata;
+namespace rtCamp\AIProviderForLMStudio\Metadata;
 
 use WordPress\AiClient\Messages\Enums\ModalityEnum;
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiBasedModelMetadataDirectory;
@@ -20,7 +20,7 @@ use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
 use WordPress\AiClient\Providers\Models\DTO\SupportedOption;
 use WordPress\AiClient\Providers\Models\Enums\CapabilityEnum;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
-use rtCamp\ConnectorForLMStudio\Provider\LMStudioProvider;
+use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
 
 /**
  * Class for the LM Studio model metadata directory.
