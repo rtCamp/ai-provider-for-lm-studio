@@ -1,4 +1,4 @@
-=== Connector for LM Studio ===
+=== AI Provider for LM Studio ===
 Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmittal89
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
