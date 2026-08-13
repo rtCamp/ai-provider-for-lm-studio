@@ -49,11 +49,11 @@ If your LM Studio server is configured with API token authentication, set the to
 
 = What host URL is used by default? =
 
-The default is `http://localhost:1234`. You can change this in **Settings > LM Studio Settings** or by setting the `LMSTUDIO_HOST` environment variable.
+The default is `http://localhost:1234`. You can change this in **Settings > LM Studio Settings** or by setting the `AI_PROVIDER_FOR_LM_STUDIO_HOST` environment variable.
 
 = Can I change the LM Studio host URL? =
 
-Yes. Enter the full base URL (including port) in **Settings > LM Studio Settings > Host URL**, or set the `LMSTUDIO_HOST` environment variable. The environment variable takes priority over the admin setting.
+Yes. Enter the full base URL (including port) in **Settings > LM Studio Settings > Host URL**, or set the `AI_PROVIDER_FOR_LM_STUDIO_HOST` environment variable. The environment variable takes priority over the admin setting.
 
 = Can I use vision / image-input models? =
 
