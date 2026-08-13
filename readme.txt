@@ -3,7 +3,7 @@ Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmitt
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.0
-Stable tag:        1.1.1
+Stable tag:        1.1.2
 Requires PHP:      7.4
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -79,6 +79,11 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 
 == Changelog ==
 
+= 1.1.2 =
+
+* Changed env variable from LMSTUDIO_HOST to AI_PROVIDER_FOR_LM_STUDIO_HOST
+* Renamed constants fro `_LMSTUDIO_` to `_LM_STUDIO_`
+
 = 1.1.1 =
 * Remove AI from required plugin header.
 * Added github source code information in readme.txt
@@ -102,6 +107,6 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 
 == Upgrade Notice ==
 
-= 1.1.1 =
+= 1.1.2 =
 
-* Renames plugin to "AI Provider for LM Studio"
+* Renamed constants fro `_LMSTUDIO_` to `_LM_STUDIO_`

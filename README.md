@@ -60,7 +60,7 @@ The plugin communicates with LM Studio's REST API:
 - **WordPress:** 7.0 or higher
 - **Requires at least:** 7.0
 - **Tested up to:** 7.0
-- **Stable tag:** 1.1.1
+- **Stable tag:** 1.1.2
 - **PHP:** 7.4 or higher
 - **Requires PHP:** 7.4
 - **LM Studio:** Local server must be running and accessible
