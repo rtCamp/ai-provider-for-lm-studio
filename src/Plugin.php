@@ -35,7 +35,7 @@ class Plugin {
 		add_action( 'init', [ $this, 'register_provider' ], 5 );
 		add_action( 'init', [ $this, 'register_fallback_auth' ], 15 );
 		add_action( 'init', [ $this, 'initialize_settings' ] );
-		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_FILE ), [ $this, 'plugin_action_links' ] );
+		add_filter( 'plugin_action_links_' . plugin_basename( AI_PROVIDER_FOR_LM_STUDIO_PLUGIN_FILE ), [ $this, 'plugin_action_links' ] );
 		add_filter( 'http_request_host_is_external', [ $this, 'allow_localhost_requests' ], 10, 3 );
 		add_filter( 'http_allowed_safe_ports', [ $this, 'allow_lmstudio_ports' ] );
 		// phpcs:ignore WordPressVIPMinimum.Hooks.RestrictedHooks.http_request_args -- Scoped to the configured LM Studio host to support local model inference.
@@ -50,7 +50,7 @@ class Plugin {
 	 * @return string The LM Studio host.
 	 */
 	private function get_lmstudio_host(): string {
-		$host = getenv( 'LMSTUDIO_HOST' );
+		$host = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
 		if ( false !== $host && '' !== $host ) {
 			return $host;
 		}
