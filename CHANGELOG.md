@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.2
+- Changed env variable from LMSTUDIO_HOST to AI_PROVIDER_FOR_LM_STUDIO_HOST
+- Renamed constants fro `_LMSTUDIO_` to `_LM_STUDIO_`
+
 ## 1.1.1
 - Remove AI from required plugin header.
 - Added github source code information in readme.txt

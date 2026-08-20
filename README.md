@@ -60,7 +60,7 @@ The plugin communicates with LM Studio's REST API:
 - **WordPress:** 7.0 or higher
 - **Requires at least:** 7.0
 - **Tested up to:** 7.0
-- **Stable tag:** 1.1.1
+- **Stable tag:** 1.1.2
 - **PHP:** 7.4 or higher
 - **Requires PHP:** 7.4
 - **LM Studio:** Local server must be running and accessible
@@ -107,7 +107,7 @@ The plugin connects to `http://localhost:1234` by default. If your LM Studio ser
 
 ![Screenshot-2](./wp-assets/screenshot-2.png)
 
-You can also override the host via the `LMSTUDIO_HOST` environment variable — this takes priority over the admin setting.
+You can also override the host via the `AI_PROVIDER_FOR_LM_STUDIO_HOST` environment variable — this takes priority over the admin setting.
 
 #### Selecting a Default Model
 
@@ -167,7 +167,7 @@ You can use Connector for LM Studio's vision capabilities in any WordPress AI Cl
 
 For advanced deployments, override defaults using PHP constants or environment variables:
 
-- `LMSTUDIO_HOST` — Override the LM Studio server base URL (default: `http://localhost:1234`)
+- `AI_PROVIDER_FOR_LM_STUDIO_HOST` — Override the LM Studio server base URL (default: `http://localhost:1234`)
 
 ## Development & Contributing
 
@@ -230,7 +230,7 @@ No. LM Studio supports LLM inference only. Text-to-image generation is not avail
 
 ### Can I change the LM Studio server address?
 
-Yes. Enter the full base URL (including port) in **Settings > LM Studio Settings > Host URL**, or set the `LMSTUDIO_HOST` environment variable. The environment variable takes priority.
+Yes. Enter the full base URL (including port) in **Settings > LM Studio Settings > Host URL**, or set the `AI_PROVIDER_FOR_LM_STUDIO_HOST` environment variable. The environment variable takes priority.
 
 ### Why does text generation sometimes time out?
 

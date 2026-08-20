@@ -35,7 +35,7 @@ class LMStudioProvider extends AbstractApiProvider {
 	 * @since 1.0.0
 	 */
 	protected static function baseUrl(): string {
-		$host = getenv( 'LMSTUDIO_HOST' );
+		$host = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
 		if ( false !== $host && '' !== $host ) {
 			return rtrim( $host, '/' );
 		}
@@ -90,7 +90,7 @@ class LMStudioProvider extends AbstractApiProvider {
 			'https://lmstudio.ai/docs/developer/core/authentication',
 			RequestAuthenticationMethod::apiKey(),
 			__( 'LM Studio is a self-hosted platform for managing and deploying large language models (LLMs).', 'ai-provider-for-lm-studio' ),
-			AI_PROVIDER_FOR_LMSTUDIO_PLUGIN_DIR . 'assets/images/lmstudio-logo.svg'
+			AI_PROVIDER_FOR_LM_STUDIO_PLUGIN_DIR . 'assets/images/lmstudio-logo.svg'
 		);
 	}
 
