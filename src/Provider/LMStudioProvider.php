@@ -35,17 +35,7 @@ class LMStudioProvider extends AbstractApiProvider {
 	 * @since 1.0.0
 	 */
 	protected static function baseUrl(): string {
-		$host = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
-		if ( false !== $host && '' !== $host ) {
-			return rtrim( $host, '/' );
-		}
-
-		$settings = \rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings::get_settings();
-		if ( isset( $settings['host'] ) && '' !== $settings['host'] ) {
-			return rtrim( $settings['host'], '/' );
-		}
-
-		return 'http://localhost:1234';
+		return \rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings::get_host();
 	}
 
 	/**

@@ -120,17 +120,7 @@ class Plugin {
 	 * @return string The LM Studio host.
 	 */
 	private function get_lmstudio_host(): string {
-		$host = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
-		if ( false !== $host && '' !== $host ) {
-			return $host;
-		}
-
-		$settings = LMStudioSettings::get_settings();
-		if ( isset( $settings['host'] ) && '' !== $settings['host'] ) {
-			return $settings['host'];
-		}
-
-		return 'http://localhost:1234';
+		return LMStudioSettings::get_host();
 	}
 
 	/**
