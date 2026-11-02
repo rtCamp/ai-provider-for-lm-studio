@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WordPress\AiClient\AiClient;
+use rtCamp\AIProviderForLMStudio\Plugin;
 
 /**
  * Class for LM Studio settings in the WordPress admin.
@@ -513,12 +514,16 @@ class LMStudioSettings {
 	public function get_capabilities_endpoint(): \WP_REST_Response {
 		$url = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		$response = wp_remote_get(
-			$url,
-			[
-				'sslverify' => false,
-			]
+		$response = Plugin::with_lmstudio_http_context(
+			static function () use ( $url ) {
+				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
+				return wp_remote_get(
+					$url,
+					[
+						'sslverify' => false,
+					]
+				);
+			}
 		);
 
 		if ( is_wp_error( $response ) ) {
