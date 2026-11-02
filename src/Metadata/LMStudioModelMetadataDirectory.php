@@ -14,12 +14,14 @@ namespace rtCamp\AIProviderForLMStudio\Metadata;
 use WordPress\AiClient\Messages\Enums\ModalityEnum;
 use WordPress\AiClient\Providers\ApiBasedImplementation\AbstractApiBasedModelMetadataDirectory;
 use WordPress\AiClient\Providers\Http\DTO\Request;
+use WordPress\AiClient\Providers\Http\DTO\Response;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
 use WordPress\AiClient\Providers\Http\Util\ResponseUtil;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
 use WordPress\AiClient\Providers\Models\DTO\SupportedOption;
 use WordPress\AiClient\Providers\Models\Enums\CapabilityEnum;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
+use rtCamp\AIProviderForLMStudio\Plugin;
 use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
 
 /**
@@ -45,7 +47,11 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	protected function sendListModelsRequest(): array {
 		$request  = $this->createRequest( HttpMethodEnum::GET(), 'api/v1/models' );
 		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
-		$response = $this->getHttpTransporter()->send( $request );
+		$response = Plugin::with_lmstudio_http_context(
+			function () use ( $request ): Response {
+				return $this->getHttpTransporter()->send( $request );
+			}
+		);
 
 		ResponseUtil::throwIfNotSuccessful( $response );
 

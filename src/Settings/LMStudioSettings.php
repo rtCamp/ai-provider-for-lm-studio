@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WordPress\AiClient\AiClient;
+use rtCamp\AIProviderForLMStudio\Plugin;
 
 /**
  * Class for LM Studio settings in the WordPress admin.
@@ -24,12 +25,38 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP  = 'ai-provider-for-lm-studio-settings';
-	private const OPTION_NAME   = 'ai_provider_for_lm_studio_settings';
-	private const PAGE_SLUG     = 'ai-provider-for-lm-studio';
-	private const SECTION_ID    = 'ai_provider_for_lm_studio_main';
-	private const KEY_MODEL     = 'model';
-	private const KEY_REASONING = 'reasoning';
+	private const OPTION_GROUP   = 'ai-provider-for-lm-studio-settings';
+	private const OPTION_NAME    = 'ai_provider_for_lm_studio_settings';
+	private const HOST_SITE_META = 'ai_provider_for_lm_studio_settings_host';
+	private const PAGE_SLUG      = 'ai-provider-for-lm-studio';
+	private const SECTION_ID     = 'ai_provider_for_lm_studio_main';
+	private const KEY_MODEL      = 'model';
+	private const KEY_REASONING  = 'reasoning';
+
+	/**
+	 * Gets the LM Studio host URL.
+	 *
+	 * Single source of truth for the configured host. Priority:
+	 * 1. Environment variable AI_PROVIDER_FOR_LM_STUDIO_HOST.
+	 * 2. Network-level option (multisite) or per-site option (single site).
+	 * 3. Default http://localhost:1234.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The LM Studio host URL, without a trailing slash.
+	 */
+	public static function get_host(): string {
+		$env = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
+		if ( false !== $env && '' !== $env ) {
+			return rtrim( $env, '/' );
+		}
+
+		$host = is_multisite()
+			? (string) get_site_option( self::HOST_SITE_META, '' )
+			: (string) ( self::get_settings()['host'] ?? '' );
+
+		return '' !== $host ? rtrim( $host, '/' ) : 'http://localhost:1234';
+	}
 
 	/**
 	 * Initializes the settings.
@@ -131,6 +158,21 @@ class LMStudioSettings {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
+		if ( is_multisite() ) {
+			// On multisite, only network admins may change the host, and
+			// it is stored in a network-level option so subsite values
+			// are never trusted.
+			if ( current_user_can( 'manage_network_options' ) ) {
+				update_site_option( self::HOST_SITE_META, $host );
+			}
+
+			// Never store the host in the per-site option on multisite.
+			return [
+				self::KEY_MODEL     => $model,
+				self::KEY_REASONING => $reasoning,
+			];
+		}
+
 		return [
 			'host'              => $host,
 			self::KEY_MODEL     => $model,
@@ -215,8 +257,10 @@ class LMStudioSettings {
 	 * @since 1.0.0
 	 */
 	public function render_host_field(): void {
-		$settings = self::get_settings();
-		$value    = isset( $settings['host'] ) ? $settings['host'] : '';
+		$current_host = self::get_host();
+		// Show empty when it's just the default, so the placeholder is visible.
+		$value    = 'http://localhost:1234' === $current_host ? '' : $current_host;
+		$disabled = is_multisite() && ! current_user_can( 'manage_network_options' );
 		?>
 
 		<input
@@ -226,6 +270,7 @@ class LMStudioSettings {
 			value="<?php echo esc_attr( $value ); ?>"
 			class="regular-text"
 			placeholder="http://localhost:1234"
+			<?php disabled( $disabled ); ?>
 		/>
 		<p class="description">
 			<?php
@@ -236,6 +281,10 @@ class LMStudioSettings {
 				'</code>'
 			);
 			?>
+			<?php if ( $disabled ) : ?>
+				<br />
+				<strong><?php esc_html_e( 'On a multisite network, only network administrators can configure the host URL.', 'ai-provider-for-lm-studio' ); ?></strong>
+			<?php endif; ?>
 		</p>
 
 		<?php
@@ -513,16 +562,14 @@ class LMStudioSettings {
 	public function get_capabilities_endpoint(): \WP_REST_Response {
 		$url = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		$response = wp_remote_get(
-			$url,
-			[
-				'sslverify' => false,
-			]
+		$response = Plugin::with_lmstudio_http_context(
+			static function () use ( $url ) {
+				return wp_safe_remote_get( $url );
+			}
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Could not connect to LM Studio server.', 'ai-provider-for-lm-studio' ) ], 500 );
 		}
 
 		$body = wp_remote_retrieve_body( $response );
