@@ -132,6 +132,11 @@ class LMStudioSettings {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
+		if ( is_multisite() && ! current_user_can( 'manage_network_options' ) ) {
+			$existing_settings = self::get_settings();
+			$host              = isset( $existing_settings['host'] ) ? (string) $existing_settings['host'] : '';
+		}
+
 		return [
 			'host'              => $host,
 			self::KEY_MODEL     => $model,
@@ -218,6 +223,7 @@ class LMStudioSettings {
 	public function render_host_field(): void {
 		$settings = self::get_settings();
 		$value    = isset( $settings['host'] ) ? $settings['host'] : '';
+		$disabled = is_multisite() && ! current_user_can( 'manage_network_options' );
 		?>
 
 		<input
@@ -227,6 +233,7 @@ class LMStudioSettings {
 			value="<?php echo esc_attr( $value ); ?>"
 			class="regular-text"
 			placeholder="http://localhost:1234"
+			<?php disabled( $disabled ); ?>
 		/>
 		<p class="description">
 			<?php
@@ -237,6 +244,10 @@ class LMStudioSettings {
 				'</code>'
 			);
 			?>
+			<?php if ( $disabled ) : ?>
+				<br />
+				<strong><?php esc_html_e( 'On a multisite network, only network administrators can configure the host URL.', 'ai-provider-for-lm-studio' ); ?></strong>
+			<?php endif; ?>
 		</p>
 
 		<?php
@@ -516,18 +527,12 @@ class LMStudioSettings {
 
 		$response = Plugin::with_lmstudio_http_context(
 			static function () use ( $url ) {
-				// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-				return wp_remote_get(
-					$url,
-					[
-						'sslverify' => false,
-					]
-				);
+				return wp_safe_remote_get( $url );
 			}
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Could not connect to LM Studio server.', 'ai-provider-for-lm-studio' ) ], 500 );
 		}
 
 		$body = wp_remote_retrieve_body( $response );
