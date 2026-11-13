@@ -3,6 +3,9 @@
 ## 1.2.0
 - Added decision model support via LM Studio System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) endpoints.
 - Added admin settings radio field to switch between System One and OpenAI-compatible decision API protocols.
+- Added default decision model setting on the admin settings page, defaulting to "Use model selected by AI Client".
+- Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
+- Added multimodal decision support with base64 image data URLs for vision-enabled decision models.
 - Added `LMStudioProvider::decisionModel()` and `LMStudioProvider::decisionModelIds()`.
 
 ## 1.1.2

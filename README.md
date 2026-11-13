@@ -169,12 +169,34 @@ You can use Connector for LM Studio's vision capabilities in any WordPress AI Cl
 
 Decision models evaluate an input state against typed questions in a single forward pass, returning calibrated probabilities, categorical choices, or ordinal scores rather than generated conversational text.
 
-#### Supported Protocols
-Configure your preferred protocol under **Settings > LM Studio Settings > Decision API Protocol**:
-- **System One (`/v1/systemone`)** *(Default)*: Jev-compatible format supporting `noul` (boolean probability), `choice` (categorical selection), and `score` (ordinal ranking) with probability distributions.
-- **OpenAI-compatible (`/v1/decisions`)**: Standard OpenAI decisions format returning predicate and choice values.
+#### Settings & Configuration
 
-#### Usage Example
+Configure decision model settings under **Settings > LM Studio Settings**:
+- **Default Decision Model**: Choose a default decision model loaded in LM Studio, or keep **Use model selected by AI Client** (default). When left as default, the model requested by the caller/AI Client is preserved.
+- **Decision API Protocol**:
+  - **System One (`/v1/systemone`)** *(Default)*: Jev-compatible format supporting `noul` (boolean probability), `choice` (categorical selection), and `score` (ordinal ranking) with probability distributions, plus multimodal image evaluation.
+  - **OpenAI-compatible (`/v1/decisions`)**: Standard OpenAI decisions format returning predicate and choice values.
+
+#### Supported Decision Models
+
+The settings page automatically discovers and filters for decision-making models loaded in LM Studio, including:
+
+- **Multimodal Decision Models:**
+  - `LiquidAI/d1-omni-600M-GGUF` (0.4B, Compact multimodal decision model)
+  - `LiquidAI/d1-3B-GGUF` (3B, Liquid AI multimodal decision model)
+  - `ggml-org/Clef-Flash-GGUF` (9B, Cloudflare Clef-Flash with vision adapter)
+  - `ggml-org/Clef-GGUF` (27B, Cloudflare Clef with vision adapter)
+  - `ggml-org/OpenJev-GGUF` (27B, Multimodal decision model)
+  - `ggml-org/vllm-d3-edge-GGUF` (0.7B) through `ggml-org/vllm-d3-GGUF` (27B) (Decision 3.0 family)
+- **Text Classifier & Decision Models:**
+  - `ggml-org/Julia-1-GGUF` (0.1B, Ultra-lightweight text classifier)
+  - `ggml-org/Laya-GGUF` (0.4B, ModernBERT-large encoder backbone)
+  - `ggml-org/Kev-4B-GGUF` (4B, General text classification)
+  - `ggml-org/lev-GGUF` (4B, Zero-shot text classification)
+  - `ggml-org/Bespoke-Nimble-9B-v3-GGUF` (9B, Zero-shot text classification)
+  - `nimble`, `tev1`, or any model with type `decision` or `classifier` in LM Studio
+
+#### Usage Example: Text Decision
 
 ```php
 use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
@@ -201,6 +223,33 @@ $is_urgent   = $result->getAnswer( 'is_urgent' )->getProbability(); // e.g. 0.88
 $category    = $result->getAnswer( 'category' )->getChoice();       // e.g. "billing"
 $severity    = $result->getAnswer( 'severity' )->getScore();        // e.g. 2.0
 $token_usage = $result->getTokenUsage();
+```
+
+#### Usage Example: Multimodal Decision Making
+
+Multimodal decision models evaluate images using the **System One** protocol. You can pass base64 image data URLs directly in the `$state` argument:
+
+```php
+use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
+use rtCamp\AIProviderForLMStudio\Decisions\DecisionQuestion;
+
+$image_data = 'data:image/jpeg;base64,' . base64_encode( file_get_contents( '/path/to/receipt.jpg' ) );
+
+$model = LMStudioProvider::decisionModel( 'ggml-org/Clef-Flash-GGUF' );
+
+$result = $model->decide(
+    $image_data,
+    [
+        'is_receipt' => DecisionQuestion::noul( 'Does this image display a valid store receipt or invoice?' ),
+        'document_type' => DecisionQuestion::choice(
+            'What type of document is pictured?',
+            [ 'receipt', 'invoice', 'id_card', 'other' ]
+        ),
+    ]
+);
+
+$is_receipt = $result->getAnswer( 'is_receipt' )->asBoolean(); // e.g. true
+$doc_type   = $result->getAnswer( 'document_type' )->getChoice(); // e.g. "receipt"
 ```
 
 You can also override the protocol per-request by passing the protocol string as the third parameter to `decide( $state, $questions, 'decisions' )`.
