@@ -41,4 +41,3 @@ class DecisionTypeEnum extends AbstractEnum {
 	 */
 	public const SCORE = 'score';
 }
-

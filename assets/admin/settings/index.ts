@@ -14,6 +14,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 // These match the structure defined by our PHP settings class.
 interface LMStudioSettingsGlobal {
 	selectedModel?: string;
+	selectedDecisionModel?: string;
 	selectedReasoning?: string;
 	svgs?: {
 		vision?: string;
@@ -320,15 +321,20 @@ const renderReasoning = ( savedReasoning: string ): void => {
 /**
  * Renders option tags inside the select element.
  *
- * @param {LMStudioModel[]} models        List of models.
- * @param {string}          selectedModel Currently selected model.
+ * @param {LMStudioModel[]} models                List of models.
+ * @param {string}          selectedModel         Currently selected text generation model.
+ * @param {string}          selectedDecisionModel Currently selected decision model.
  */
 const renderModels = (
 	models: LMStudioModel[],
 	selectedModel: string,
+	selectedDecisionModel: string,
 ): void => {
 	const select = document.getElementById(
 		'ai_provider_for_lm_studio_settings-model',
+	) as HTMLSelectElement | null;
+	const decisionSelect = document.getElementById(
+		'ai_provider_for_lm_studio_settings-decision-model',
 	) as HTMLSelectElement | null;
 	const status = document.getElementById( 'lmstudio-model-status' );
 
@@ -346,6 +352,16 @@ const renderModels = (
 	select.appendChild( defaultOption );
 
 	let hasSelectedModel = false;
+
+	// Prepare decision models select element if present on the page.
+	let hasSelectedDecisionModel = false;
+	if ( decisionSelect ) {
+		decisionSelect.innerHTML = '';
+		const defaultDecisionOption = document.createElement( 'option' );
+		defaultDecisionOption.value = '';
+		defaultDecisionOption.textContent = __( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' );
+		decisionSelect.appendChild( defaultDecisionOption );
+	}
 
 	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
@@ -369,6 +385,15 @@ const renderModels = (
 			select.appendChild( selectedOnlyOption );
 		}
 
+		if ( decisionSelect && selectedDecisionModel ) {
+			const selectedDecisionOnlyOption = document.createElement( 'option' );
+			selectedDecisionOnlyOption.value = selectedDecisionModel;
+			/* translators: %s: Saved model identifier */
+			selectedDecisionOnlyOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
+			selectedDecisionOnlyOption.selected = true;
+			decisionSelect.appendChild( selectedDecisionOnlyOption );
+		}
+
 		return;
 	}
 
@@ -390,6 +415,19 @@ const renderModels = (
 		}
 
 		select.appendChild( option );
+
+		if ( decisionSelect ) {
+			const decOption = document.createElement( 'option' );
+			decOption.value = modelId;
+			decOption.textContent = modelId;
+
+			if ( selectedDecisionModel && modelId === selectedDecisionModel ) {
+				decOption.selected = true;
+				hasSelectedDecisionModel = true;
+			}
+
+			decisionSelect.appendChild( decOption );
+		}
 	} );
 
 	// If the previously saved model is no longer active in LM Studio, display it with a "saved" label.
@@ -400,6 +438,15 @@ const renderModels = (
 		missingOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedModel );
 		missingOption.selected = true;
 		select.appendChild( missingOption );
+	}
+
+	if ( decisionSelect && selectedDecisionModel && ! hasSelectedDecisionModel ) {
+		const missingDecOption = document.createElement( 'option' );
+		missingDecOption.value = selectedDecisionModel;
+		/* translators: %s: Saved model identifier */
+		missingDecOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
+		missingDecOption.selected = true;
+		decisionSelect.appendChild( missingDecOption );
 	}
 
 	// Render the model loaded count beautifully
@@ -420,6 +467,9 @@ const renderModels = (
 
 	// Re-enable input selector once load completes
 	select.disabled = false;
+	if ( decisionSelect ) {
+		decisionSelect.disabled = false;
+	}
 
 	// Refresh the reasoning options dynamic field when the user switches models.
 	select.addEventListener( 'change', () => {
@@ -448,10 +498,13 @@ const renderError = ( message: string ): void => {
 };
 
 // Asynchronously load the active models from the local LM Studio server via WordPress REST API.
-const loadModels = ( selectedModel: string ): void => {
+const loadModels = ( selectedModel: string, selectedDecisionModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	const select = document.getElementById(
 		'ai_provider_for_lm_studio_settings-model',
+	) as HTMLSelectElement | null;
+	const decisionSelect = document.getElementById(
+		'ai_provider_for_lm_studio_settings-decision-model',
 	) as HTMLSelectElement | null;
 
 	if ( ! status ) {
@@ -461,6 +514,9 @@ const loadModels = ( selectedModel: string ): void => {
 	// Disable dropdown while fetching and render spinner badge
 	if ( select ) {
 		select.disabled = true;
+	}
+	if ( decisionSelect ) {
+		decisionSelect.disabled = true;
 	}
 	const loadingBadge = document.createElement( 'span' );
 	loadingBadge.className = 'lmstudio-loader-badge';
@@ -476,11 +532,14 @@ const loadModels = ( selectedModel: string ): void => {
 	} )
 		.then( ( models ) => {
 			const modelsList = Array.isArray( models ) ? models : [];
-			renderModels( modelsList, selectedModel );
+			renderModels( modelsList, selectedModel, selectedDecisionModel );
 		} )
 		.catch( ( error: unknown ) => {
 			if ( select ) {
 				select.disabled = false;
+			}
+			if ( decisionSelect ) {
+				decisionSelect.disabled = false;
 			}
 			const err = error as { message?: string };
 			renderError(
@@ -516,7 +575,7 @@ const loadCapabilities = ( savedReasoning: string ): void => {
 // Main initializer method that triggers all necessary fetches.
 const init = (): void => {
 	// Load active model list first.
-	loadModels( settings.selectedModel || '' );
+	loadModels( settings.selectedModel || '', settings.selectedDecisionModel || '' );
 
 	// Fetch dynamic model features if capabilities endpoint is defined.
 	loadCapabilities( settings.selectedReasoning || '' );

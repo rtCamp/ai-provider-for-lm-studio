@@ -189,6 +189,12 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 			}
 		}
 
+		$model_id                = $this->metadata()->getId();
+		$selected_decision_model = LMStudioSettings::get_selected_decision_model();
+		if ( '' !== $selected_decision_model ) {
+			$model_id = $selected_decision_model;
+		}
+
 		if ( self::PROTOCOL_DECISIONS === $protocol ) {
 			$questions_list = [];
 			foreach ( $questions as $name => $question ) {
@@ -196,7 +202,7 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 			}
 
 			$params = [
-				'model'     => $this->metadata()->getId(),
+				'model'     => $model_id,
 				'input'     => $state,
 				'questions' => $questions_list,
 			];
@@ -207,7 +213,7 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 			}
 
 			$params = [
-				'model'     => $this->metadata()->getId(),
+				'model'     => $model_id,
 				'state'     => $state,
 				'questions' => $questions_data,
 			];

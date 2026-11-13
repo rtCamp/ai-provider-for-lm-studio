@@ -49,15 +49,28 @@ class LMStudioProvider extends AbstractApiProvider {
 	 *
 	 * @since 1.2.0
 	 *
-	 * @param string                                                    $model_id     The model ID.
+	 * @param string|null                                               $model_id     Optional. The model ID. If omitted or null,
+	 *                                                                                uses the default decision model from settings.
 	 * @param \WordPress\AiClient\Providers\Models\DTO\ModelConfig|null $model_config Optional. Model configuration,
 	 *                                                                                for custom options. Default null.
 	 * @return \rtCamp\AIProviderForLMStudio\Models\LMStudioDecisionModel The decision model.
 	 */
-	public static function decisionModel( string $model_id, ?ModelConfig $model_config = null ): LMStudioDecisionModel {
+	public static function decisionModel( ?string $model_id = null, ?ModelConfig $model_config = null ): LMStudioDecisionModel {
+		$effective_model_id = null !== $model_id && '' !== trim( $model_id )
+			? trim( $model_id )
+			: \rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings::get_selected_decision_model();
+
+		if ( '' === $effective_model_id ) {
+			$effective_model_id = \rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings::get_selected_model();
+		}
+
+		if ( '' === $effective_model_id ) {
+			$effective_model_id = 'default';
+		}
+
 		$model_metadata = new ModelMetadata(
-			$model_id,
-			$model_id,
+			$effective_model_id,
+			$effective_model_id,
 			[],
 			[ new SupportedOption( OptionEnum::customOptions() ) ]
 		);
