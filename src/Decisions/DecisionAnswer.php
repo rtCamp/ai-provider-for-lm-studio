@@ -252,6 +252,59 @@ class DecisionAnswer {
 	}
 
 	/**
+	 * Returns whether the answer evaluates to true (probability >= 0.5 or truthy value).
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return bool True if positive, false otherwise.
+	 */
+	public function asBoolean(): bool {
+		$prob = $this->getProbability();
+		if ( null !== $prob ) {
+			return $prob >= 0.5;
+		}
+
+		return (bool) $this->value;
+	}
+
+	/**
+	 * Returns the answer as a string.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The choice or string representation of the value.
+	 */
+	public function asString(): string {
+		$choice = $this->getChoice();
+		if ( null !== $choice ) {
+			return $choice;
+		}
+
+		return is_scalar( $this->value ) ? (string) $this->value : '';
+	}
+
+	/**
+	 * Returns the answer as a float number.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return float|null The score, probability, or numeric value.
+	 */
+	public function asNumber(): ?float {
+		$score = $this->getScore();
+		if ( null !== $score ) {
+			return $score;
+		}
+
+		$prob = $this->getProbability();
+		if ( null !== $prob ) {
+			return $prob;
+		}
+
+		return is_numeric( $this->value ) ? (float) $this->value : null;
+	}
+
+	/**
 	 * Returns the probability of each option (choice) or level index (score).
 	 *
 	 * @since 1.2.0

@@ -21,7 +21,7 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 * Configure a default decision model on the settings page, defaulting to "Use model selected by AI Client".
 * Automatic model discovery from your running LM Studio instance with dedicated filtering for text and decision models.
 * Text generation tasks using LM Studio's API.
-* Decision model tasks using System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) endpoints.
+* Automatic protocol support for both System One (/v1/systemone) and OpenAI-compatible (/v1/decisions, /v1/decision) endpoints.
 * Multimodal decision making support with image inputs for vision-capable decision models (e.g. Clef-Flash, OpenJev, d1-omni, Decision 3.0).
 * Vision-capable models, such as those used for generating alt-text, can process both text and images.
 * Settings page under **Settings > LM Studio Settings**.
@@ -90,8 +90,7 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 
 = 1.2.0 =
 
-* Added decision model capability support via LM Studio System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) APIs.
-* Added admin settings field with radio options to toggle between System One and OpenAI-compatible decision protocols.
+* Added decision model capability support with automatic negotiation for System One (/v1/systemone) and OpenAI-compatible (/v1/decisions, /v1/decision) endpoints.
 * Added default decision model setting on the settings page with "Use model selected by AI Client" as default.
 * Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
 * Added multimodal decision support with base64 image input for vision-enabled decision models.

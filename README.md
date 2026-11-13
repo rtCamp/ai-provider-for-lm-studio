@@ -173,9 +173,14 @@ Decision models evaluate an input state against typed questions in a single forw
 
 Configure decision model settings under **Settings > LM Studio Settings**:
 - **Default Decision Model**: Choose a default decision model loaded in LM Studio, or keep **Use model selected by AI Client** (default). When left as default, the model requested by the caller/AI Client is preserved.
-- **Decision API Protocol**:
-  - **System One (`/v1/systemone`)** *(Default)*: Jev-compatible format supporting `noul` (boolean probability), `choice` (categorical selection), and `score` (ordinal ranking) with probability distributions, plus multimodal image evaluation.
-  - **OpenAI-compatible (`/v1/decisions`)**: Standard OpenAI decisions format returning predicate and choice values.
+
+#### Automatic Protocol Support
+
+The plugin automatically negotiates and supports both decision protocols:
+- **System One (`/v1/systemone`)**: Jev-compatible format supporting `noul` (boolean probability), `choice` (categorical selection), and `score` (ordinal ranking) with probability distributions, plus multimodal image evaluation.
+- **OpenAI-compatible (`/v1/decisions` and `/v1/decision`)**: Standard OpenAI decisions format returning predicate and choice values.
+
+Endpoint availability is detected automatically without needing manual configuration. If you wish to target a specific protocol explicitly, you can pass it as the third parameter to `decide( $state, $questions, 'systemone' | 'decisions' )`.
 
 #### Supported Decision Models
 
