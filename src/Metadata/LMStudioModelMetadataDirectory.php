@@ -30,7 +30,7 @@ use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
  * @since 1.0.0
  *
  * @phpstan-type ModelsResponseData array{
- *     models: list<array{type: string, object?: string, key: string, capabilities?: array{vision?: bool, trained_for_tool_use?: bool}}>
+ *     models: list<array{type: string, object?: string, key: string, display_name?: string, architecture?: string, capabilities?: array<string, mixed>}>
  * }
  */
 class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirectory {
@@ -193,11 +193,21 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 				continue;
 			}
 
-			$type         = $model_entry['type'] ?? '';
+			$type         = isset( $model_entry['type'] ) && is_string( $model_entry['type'] ) ? $model_entry['type'] : '';
 			$capabilities = isset( $model_entry['capabilities'] ) && is_array( $model_entry['capabilities'] ) ? $model_entry['capabilities'] : [];
-			$is_decision  = 'decision' === $type
+			$key          = trim( $model_entry['key'] );
+			$architecture = isset( $model_entry['architecture'] ) && is_string( $model_entry['architecture'] ) ? $model_entry['architecture'] : '';
+			$display_name = isset( $model_entry['display_name'] ) && is_string( $model_entry['display_name'] ) ? $model_entry['display_name'] : '';
+
+			$pattern = '/\b(decision|systemone|classifier|clef|openjev|jev|julia|laya|kev|lev|nimble|tev1|(?:vllm-)?(?:d1|d3)(?=[-_\b]|$))\b/i';
+
+			$is_decision = 'decision' === $type
 				|| 'classifier' === $type
-				|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] );
+				|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] )
+				|| in_array( 'decision', $capabilities, true )
+				|| 1 === preg_match( $pattern, $key )
+				|| 1 === preg_match( $pattern, $architecture )
+				|| 1 === preg_match( $pattern, $display_name );
 
 			if ( ! $is_decision ) {
 				continue;

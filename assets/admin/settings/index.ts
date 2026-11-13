@@ -321,20 +321,15 @@ const renderReasoning = ( savedReasoning: string ): void => {
 /**
  * Renders option tags inside the select element.
  *
- * @param {LMStudioModel[]} models                List of models.
- * @param {string}          selectedModel         Currently selected text generation model.
- * @param {string}          selectedDecisionModel Currently selected decision model.
+ * @param {LMStudioModel[]} models        List of models.
+ * @param {string}          selectedModel Currently selected text generation model.
  */
 const renderModels = (
 	models: LMStudioModel[],
 	selectedModel: string,
-	selectedDecisionModel: string,
 ): void => {
 	const select = document.getElementById(
 		'ai_provider_for_lm_studio_settings-model',
-	) as HTMLSelectElement | null;
-	const decisionSelect = document.getElementById(
-		'ai_provider_for_lm_studio_settings-decision-model',
 	) as HTMLSelectElement | null;
 	const status = document.getElementById( 'lmstudio-model-status' );
 
@@ -352,16 +347,6 @@ const renderModels = (
 	select.appendChild( defaultOption );
 
 	let hasSelectedModel = false;
-
-	// Prepare decision models select element if present on the page.
-	let hasSelectedDecisionModel = false;
-	if ( decisionSelect ) {
-		decisionSelect.innerHTML = '';
-		const defaultDecisionOption = document.createElement( 'option' );
-		defaultDecisionOption.value = '';
-		defaultDecisionOption.textContent = __( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' );
-		decisionSelect.appendChild( defaultDecisionOption );
-	}
 
 	// Handle the edge case where no active models are available from LM Studio.
 	if ( models.length === 0 ) {
@@ -385,15 +370,7 @@ const renderModels = (
 			select.appendChild( selectedOnlyOption );
 		}
 
-		if ( decisionSelect && selectedDecisionModel ) {
-			const selectedDecisionOnlyOption = document.createElement( 'option' );
-			selectedDecisionOnlyOption.value = selectedDecisionModel;
-			/* translators: %s: Saved model identifier */
-			selectedDecisionOnlyOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
-			selectedDecisionOnlyOption.selected = true;
-			decisionSelect.appendChild( selectedDecisionOnlyOption );
-		}
-
+		select.disabled = false;
 		return;
 	}
 
@@ -415,19 +392,6 @@ const renderModels = (
 		}
 
 		select.appendChild( option );
-
-		if ( decisionSelect ) {
-			const decOption = document.createElement( 'option' );
-			decOption.value = modelId;
-			decOption.textContent = modelId;
-
-			if ( selectedDecisionModel && modelId === selectedDecisionModel ) {
-				decOption.selected = true;
-				hasSelectedDecisionModel = true;
-			}
-
-			decisionSelect.appendChild( decOption );
-		}
 	} );
 
 	// If the previously saved model is no longer active in LM Studio, display it with a "saved" label.
@@ -438,15 +402,6 @@ const renderModels = (
 		missingOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedModel );
 		missingOption.selected = true;
 		select.appendChild( missingOption );
-	}
-
-	if ( decisionSelect && selectedDecisionModel && ! hasSelectedDecisionModel ) {
-		const missingDecOption = document.createElement( 'option' );
-		missingDecOption.value = selectedDecisionModel;
-		/* translators: %s: Saved model identifier */
-		missingDecOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
-		missingDecOption.selected = true;
-		decisionSelect.appendChild( missingDecOption );
 	}
 
 	// Render the model loaded count beautifully
@@ -467,15 +422,105 @@ const renderModels = (
 
 	// Re-enable input selector once load completes
 	select.disabled = false;
-	if ( decisionSelect ) {
-		decisionSelect.disabled = false;
-	}
 
 	// Refresh the reasoning options dynamic field when the user switches models.
 	select.addEventListener( 'change', () => {
 		renderReasoning( '' );
 		renderCapabilitiesBadges();
 	} );
+};
+
+/**
+ * Renders option tags inside the decision model select element.
+ *
+ * @param {LMStudioModel[]} models                List of decision models.
+ * @param {string}          selectedDecisionModel Currently selected decision model.
+ */
+const renderDecisionModels = (
+	models: LMStudioModel[],
+	selectedDecisionModel: string,
+): void => {
+	const decisionSelect = document.getElementById(
+		'ai_provider_for_lm_studio_settings-decision-model',
+	) as HTMLSelectElement | null;
+	const status = document.getElementById( 'lmstudio-decision-model-status' );
+
+	if ( ! decisionSelect || ! status ) {
+		return;
+	}
+
+	decisionSelect.innerHTML = '';
+
+	const defaultOption = document.createElement( 'option' );
+	defaultOption.value = '';
+	defaultOption.textContent = __( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' );
+	decisionSelect.appendChild( defaultOption );
+
+	let hasSelectedDecisionModel = false;
+
+	if ( models.length === 0 ) {
+		const emptyBadge = document.createElement( 'span' );
+		emptyBadge.className = 'lmstudio-loader-badge';
+		emptyBadge.appendChild( document.createTextNode( __( '0 decision models loaded', 'ai-provider-for-lm-studio' ) ) );
+		status.innerHTML = '';
+		status.appendChild( emptyBadge );
+
+		if ( selectedDecisionModel ) {
+			const selectedDecisionOnlyOption = document.createElement( 'option' );
+			selectedDecisionOnlyOption.value = selectedDecisionModel;
+			/* translators: %s: Saved model identifier */
+			selectedDecisionOnlyOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
+			selectedDecisionOnlyOption.selected = true;
+			decisionSelect.appendChild( selectedDecisionOnlyOption );
+		}
+
+		decisionSelect.disabled = false;
+		return;
+	}
+
+	models.forEach( ( model ) => {
+		const modelId = getModelId( model );
+		if ( ! modelId ) {
+			return;
+		}
+
+		const option = document.createElement( 'option' );
+		option.value = modelId;
+		option.textContent = modelId;
+
+		if ( selectedDecisionModel && modelId === selectedDecisionModel ) {
+			option.selected = true;
+			hasSelectedDecisionModel = true;
+		}
+
+		decisionSelect.appendChild( option );
+	} );
+
+	if ( selectedDecisionModel && ! hasSelectedDecisionModel ) {
+		const missingOption = document.createElement( 'option' );
+		missingOption.value = selectedDecisionModel;
+		/* translators: %s: Saved model identifier */
+		missingOption.textContent = sprintf( __( '%s (saved)', 'ai-provider-for-lm-studio' ), selectedDecisionModel );
+		missingOption.selected = true;
+		decisionSelect.appendChild( missingOption );
+	}
+
+	const countText = sprintf(
+		/* translators: %d: number of decision models loaded */
+		_n( '%d decision model loaded', '%d decision models loaded', models.length, 'ai-provider-for-lm-studio' ),
+		models.length,
+	);
+	const successBadge = document.createElement( 'span' );
+	successBadge.className = 'lmstudio-loader-badge lmstudio-success-badge';
+	const svg = getSVGElement( 'success' );
+	if ( svg ) {
+		successBadge.appendChild( svg );
+	}
+	successBadge.appendChild( document.createTextNode( countText ) );
+	status.innerHTML = '';
+	status.appendChild( successBadge );
+
+	decisionSelect.disabled = false;
 };
 
 // Render user-facing error state when connection or fetch fails.
@@ -498,13 +543,10 @@ const renderError = ( message: string ): void => {
 };
 
 // Asynchronously load the active models from the local LM Studio server via WordPress REST API.
-const loadModels = ( selectedModel: string, selectedDecisionModel: string ): void => {
+const loadModels = ( selectedModel: string ): void => {
 	const status = document.getElementById( 'lmstudio-model-status' );
 	const select = document.getElementById(
 		'ai_provider_for_lm_studio_settings-model',
-	) as HTMLSelectElement | null;
-	const decisionSelect = document.getElementById(
-		'ai_provider_for_lm_studio_settings-decision-model',
 	) as HTMLSelectElement | null;
 
 	if ( ! status ) {
@@ -514,9 +556,6 @@ const loadModels = ( selectedModel: string, selectedDecisionModel: string ): voi
 	// Disable dropdown while fetching and render spinner badge
 	if ( select ) {
 		select.disabled = true;
-	}
-	if ( decisionSelect ) {
-		decisionSelect.disabled = true;
 	}
 	const loadingBadge = document.createElement( 'span' );
 	loadingBadge.className = 'lmstudio-loader-badge';
@@ -532,19 +571,61 @@ const loadModels = ( selectedModel: string, selectedDecisionModel: string ): voi
 	} )
 		.then( ( models ) => {
 			const modelsList = Array.isArray( models ) ? models : [];
-			renderModels( modelsList, selectedModel, selectedDecisionModel );
+			renderModels( modelsList, selectedModel );
 		} )
 		.catch( ( error: unknown ) => {
 			if ( select ) {
 				select.disabled = false;
 			}
-			if ( decisionSelect ) {
-				decisionSelect.disabled = false;
-			}
 			const err = error as { message?: string };
 			renderError(
 				err?.message || __( 'Failed to load models.', 'ai-provider-for-lm-studio' ),
 			);
+		} );
+};
+
+// Asynchronously load decision models from the local LM Studio server via WordPress REST API.
+const loadDecisionModels = ( selectedDecisionModel: string ): void => {
+	const status = document.getElementById( 'lmstudio-decision-model-status' );
+	const decisionSelect = document.getElementById(
+		'ai_provider_for_lm_studio_settings-decision-model',
+	) as HTMLSelectElement | null;
+
+	if ( ! status || ! decisionSelect ) {
+		return;
+	}
+
+	decisionSelect.disabled = true;
+
+	const loadingBadge = document.createElement( 'span' );
+	loadingBadge.className = 'lmstudio-loader-badge';
+	const spinner = document.createElement( 'div' );
+	spinner.className = 'lmstudio-spinner';
+	loadingBadge.appendChild( spinner );
+	loadingBadge.appendChild( document.createTextNode( __( 'Fetching decision models…', 'ai-provider-for-lm-studio' ) ) );
+	status.innerHTML = '';
+	status.appendChild( loadingBadge );
+
+	apiFetch<LMStudioModel[]>( {
+		path: '/ai-provider-for-lm-studio/v1/decision-models',
+	} )
+		.then( ( models ) => {
+			const modelsList = Array.isArray( models ) ? models : [];
+			renderDecisionModels( modelsList, selectedDecisionModel );
+		} )
+		.catch( ( error: unknown ) => {
+			decisionSelect.disabled = false;
+			const err = error as { message?: string };
+			const errorBadge = document.createElement( 'span' );
+			errorBadge.className = 'lmstudio-loader-badge lmstudio-error-badge';
+			errorBadge.title = err?.message || __( 'Failed to load decision models.', 'ai-provider-for-lm-studio' );
+			const svg = getSVGElement( 'error' );
+			if ( svg ) {
+				errorBadge.appendChild( svg );
+			}
+			errorBadge.appendChild( document.createTextNode( __( 'Connection failed', 'ai-provider-for-lm-studio' ) ) );
+			status.innerHTML = '';
+			status.appendChild( errorBadge );
 		} );
 };
 
@@ -574,8 +655,9 @@ const loadCapabilities = ( savedReasoning: string ): void => {
 
 // Main initializer method that triggers all necessary fetches.
 const init = (): void => {
-	// Load active model list first.
-	loadModels( settings.selectedModel || '', settings.selectedDecisionModel || '' );
+	// Load active model lists.
+	loadModels( settings.selectedModel || '' );
+	loadDecisionModels( settings.selectedDecisionModel || '' );
 
 	// Fetch dynamic model features if capabilities endpoint is defined.
 	loadCapabilities( settings.selectedReasoning || '' );

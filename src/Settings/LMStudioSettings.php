@@ -504,6 +504,16 @@ class LMStudioSettings {
 				'permission_callback' => [ $this, 'check_rest_permissions' ],
 			]
 		);
+
+		register_rest_route(
+			'ai-provider-for-lm-studio/v1',
+			'/decision-models',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_decision_models_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
 	}
 
 	/**
@@ -551,6 +561,55 @@ class LMStudioSettings {
 				[
 					// translators: %s: Error message.
 					'message' => sprintf( __( 'Could not list models for provider. Error: %s', 'ai-provider-for-lm-studio' ), $e->getMessage() ),
+				],
+				500
+			);
+		}
+	}
+
+	/**
+	 * REST API endpoint to retrieve available decision models.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return \WP_REST_Response The REST response.
+	 */
+	public function get_decision_models_endpoint(): \WP_REST_Response {
+		$provider_id = 'lmstudio';
+		$registry    = AiClient::defaultRegistry();
+
+		if ( ! $registry->hasProvider( $provider_id ) ) {
+			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'ai-provider-for-lm-studio' ) ], 404 );
+		}
+
+		$provider_classname = $registry->getProviderClassName( $provider_id );
+
+		try {
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$provider_availability = $provider_classname::availability();
+			if ( ! $provider_availability->isConfigured() ) {
+				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'ai-provider-for-lm-studio' ) ], 400 );
+			}
+
+			$decision_model_ids = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::decisionModelIds();
+
+			$decision_models = array_map(
+				static function ( string $id ): array {
+					return [
+						'id'   => $id,
+						'name' => $id,
+						'key'  => $id,
+					];
+				},
+				$decision_model_ids
+			);
+
+			return new \WP_REST_Response( $decision_models, 200 );
+		} catch ( \Throwable $e ) {
+			return new \WP_REST_Response(
+				[
+					// translators: %s: Error message.
+					'message' => sprintf( __( 'Could not list decision models for provider. Error: %s', 'ai-provider-for-lm-studio' ), $e->getMessage() ),
 				],
 				500
 			);
