@@ -77,15 +77,21 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		$models_map = [];
 
 		foreach ( $models_data['models'] as $model_entry ) {
-			if ( 'llm' !== $model_entry['type'] ) {
+			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
+				continue;
+			}
+
+			if ( ! isset( $model_entry['type'] ) || ! is_string( $model_entry['type'] ) || 'llm' !== $model_entry['type'] ) {
+				continue;
+			}
+
+			// Don't include decision models in the text generation model listing.
+			if ( self::isDecisionModelEntry( $model_entry ) ) {
 				continue;
 			}
 
 			$model_name = $model_entry['key'];
 			$metadata   = $this->buildModelMetadata( $model_name, $model_entry );
-			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
-				continue;
-			}
 
 			$models_map[ $model_name ] = $metadata;
 		}
@@ -193,23 +199,7 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 				continue;
 			}
 
-			$type         = isset( $model_entry['type'] ) && is_string( $model_entry['type'] ) ? $model_entry['type'] : '';
-			$capabilities = isset( $model_entry['capabilities'] ) && is_array( $model_entry['capabilities'] ) ? $model_entry['capabilities'] : [];
-			$key          = trim( $model_entry['key'] );
-			$architecture = isset( $model_entry['architecture'] ) && is_string( $model_entry['architecture'] ) ? $model_entry['architecture'] : '';
-			$display_name = isset( $model_entry['display_name'] ) && is_string( $model_entry['display_name'] ) ? $model_entry['display_name'] : '';
-
-			$pattern = '/\b(decision|systemone|classifier|clef|openjev|jev|julia|laya|kev|lev|nimble|tev1|(?:vllm-)?(?:d1|d3)(?=[-_\b]|$))\b/i';
-
-			$is_decision = 'decision' === $type
-				|| 'classifier' === $type
-				|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] )
-				|| in_array( 'decision', $capabilities, true )
-				|| 1 === preg_match( $pattern, $key )
-				|| 1 === preg_match( $pattern, $architecture )
-				|| 1 === preg_match( $pattern, $display_name );
-
-			if ( ! $is_decision ) {
+			if ( ! self::isDecisionModelEntry( $model_entry ) ) {
 				continue;
 			}
 
@@ -219,6 +209,32 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		sort( $decision_model_ids );
 
 		return $decision_model_ids;
+	}
+
+	/**
+	 * Checks whether a model entry represents a decision-making model.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array<string, mixed> $model_entry The model entry from LM Studio.
+	 * @return bool True if the model is a decision model, false otherwise.
+	 */
+	public static function isDecisionModelEntry( array $model_entry ): bool {
+		$type         = isset( $model_entry['type'] ) && is_string( $model_entry['type'] ) ? $model_entry['type'] : '';
+		$capabilities = isset( $model_entry['capabilities'] ) && is_array( $model_entry['capabilities'] ) ? $model_entry['capabilities'] : [];
+		$key          = isset( $model_entry['key'] ) && is_string( $model_entry['key'] ) ? trim( $model_entry['key'] ) : '';
+		$architecture = isset( $model_entry['architecture'] ) && is_string( $model_entry['architecture'] ) ? $model_entry['architecture'] : '';
+		$display_name = isset( $model_entry['display_name'] ) && is_string( $model_entry['display_name'] ) ? $model_entry['display_name'] : '';
+
+		$pattern = '/\b(decision|systemone|classifier|clef|openjev|jev|julia|laya|kev|lev|nimble|tev1|(?:vllm-)?(?:d1|d3)(?=[-_\b]|$))\b/i';
+
+		return 'decision' === $type
+			|| 'classifier' === $type
+			|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] )
+			|| in_array( 'decision', $capabilities, true )
+			|| 1 === preg_match( $pattern, $key )
+			|| 1 === preg_match( $pattern, $architecture )
+			|| 1 === preg_match( $pattern, $display_name );
 	}
 
 	/**

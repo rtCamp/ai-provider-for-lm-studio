@@ -719,6 +719,10 @@ class LMStudioSettings {
 				continue;
 			}
 
+			if ( \rtCamp\AIProviderForLMStudio\Metadata\LMStudioModelMetadataDirectory::isDecisionModelEntry( $model ) ) {
+				continue;
+			}
+
 			$model_key = $model['key'];
 			$reasoning = null;
 			$vision    = false;
