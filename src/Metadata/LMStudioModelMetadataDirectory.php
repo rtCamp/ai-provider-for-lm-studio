@@ -163,6 +163,55 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 	}
 
 	/**
+	 * Lists the models that support decisions.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return list<string> The model IDs, sorted.
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the host is unreachable.
+	 */
+	public function listDecisionModelIds(): array {
+		$request  = $this->createRequest( HttpMethodEnum::GET(), 'api/v1/models' );
+		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
+		$response = Plugin::with_lmstudio_http_context(
+			function () use ( $request ): Response {
+				return $this->getHttpTransporter()->send( $request );
+			}
+		);
+
+		ResponseUtil::throwIfNotSuccessful( $response );
+
+		/** @var ModelsResponseData $models_data */
+		$models_data = $response->getData();
+		if ( ! isset( $models_data['models'] ) || ! is_array( $models_data['models'] ) ) {
+			return [];
+		}
+
+		$decision_model_ids = [];
+		foreach ( $models_data['models'] as $model_entry ) {
+			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
+				continue;
+			}
+
+			$type         = $model_entry['type'] ?? '';
+			$capabilities = isset( $model_entry['capabilities'] ) && is_array( $model_entry['capabilities'] ) ? $model_entry['capabilities'] : [];
+			$is_decision  = 'decision' === $type
+				|| 'classifier' === $type
+				|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] );
+
+			if ( ! $is_decision ) {
+				continue;
+			}
+
+			$decision_model_ids[] = $model_entry['key'];
+		}
+
+		sort( $decision_model_ids );
+
+		return $decision_model_ids;
+	}
+
+	/**
 	 * Creates a request object for LM Studio.
 	 *
 	 * @since 1.0.0

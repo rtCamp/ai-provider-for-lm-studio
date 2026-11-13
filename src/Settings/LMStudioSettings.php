@@ -34,6 +34,21 @@ class LMStudioSettings {
 	private const KEY_REASONING  = 'reasoning';
 
 	/**
+	 * Setting key for decision API protocol.
+	 */
+	public const KEY_DECISION_PROTOCOL = 'decision_protocol';
+
+	/**
+	 * Protocol identifier for System One / Jev compatibility.
+	 */
+	public const PROTOCOL_SYSTEMONE = 'systemone';
+
+	/**
+	 * Protocol identifier for OpenAI-compatible decisions.
+	 */
+	public const PROTOCOL_DECISIONS = 'decisions';
+
+	/**
 	 * Gets the LM Studio host URL.
 	 *
 	 * Single source of truth for the configured host. Priority:
@@ -118,6 +133,14 @@ class LMStudioSettings {
 			self::PAGE_SLUG,
 			self::SECTION_ID
 		);
+
+		add_settings_field(
+			self::OPTION_NAME . '_' . self::KEY_DECISION_PROTOCOL,
+			__( 'Decision API Protocol', 'ai-provider-for-lm-studio' ),
+			[ $this, 'render_decision_protocol_field' ],
+			self::PAGE_SLUG,
+			self::SECTION_ID
+		);
 	}
 
 	/**
@@ -148,11 +171,13 @@ class LMStudioSettings {
 			return self::get_default_settings();
 		}
 
-		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
-		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$model     = trim( $model );
-		$reasoning = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
-		$reasoning = trim( $reasoning );
+		$host              = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
+		$model             = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
+		$model             = trim( $model );
+		$reasoning         = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
+		$reasoning         = trim( $reasoning );
+		$raw_protocol      = isset( $value[ self::KEY_DECISION_PROTOCOL ] ) ? sanitize_text_field( (string) $value[ self::KEY_DECISION_PROTOCOL ] ) : self::PROTOCOL_SYSTEMONE;
+		$decision_protocol = in_array( $raw_protocol, [ self::PROTOCOL_SYSTEMONE, self::PROTOCOL_DECISIONS ], true ) ? $raw_protocol : self::PROTOCOL_SYSTEMONE;
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
@@ -168,15 +193,17 @@ class LMStudioSettings {
 
 			// Never store the host in the per-site option on multisite.
 			return [
-				self::KEY_MODEL     => $model,
-				self::KEY_REASONING => $reasoning,
+				self::KEY_MODEL             => $model,
+				self::KEY_REASONING         => $reasoning,
+				self::KEY_DECISION_PROTOCOL => $decision_protocol,
 			];
 		}
 
 		return [
-			'host'              => $host,
-			self::KEY_MODEL     => $model,
-			self::KEY_REASONING => $reasoning,
+			'host'                      => $host,
+			self::KEY_MODEL             => $model,
+			self::KEY_REASONING         => $reasoning,
+			self::KEY_DECISION_PROTOCOL => $decision_protocol,
 		];
 	}
 
@@ -496,9 +523,10 @@ class LMStudioSettings {
 	 */
 	private static function get_default_settings(): array {
 		return [
-			'host'              => '',
-			self::KEY_MODEL     => '',
-			self::KEY_REASONING => '',
+			'host'                      => '',
+			self::KEY_MODEL             => '',
+			self::KEY_REASONING         => '',
+			self::KEY_DECISION_PROTOCOL => self::PROTOCOL_SYSTEMONE,
 		];
 	}
 
@@ -549,6 +577,43 @@ class LMStudioSettings {
 			name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_REASONING . ']' ); ?>"
 			value="<?php echo esc_attr( $current_reasoning ); ?>"
 		/>
+		<?php
+	}
+
+	/**
+	 * Renders the decision API protocol radio field.
+	 *
+	 * @since 1.2.0
+	 */
+	public function render_decision_protocol_field(): void {
+		$current = self::get_decision_protocol();
+		?>
+		<fieldset>
+			<legend class="screen-reader-text">
+				<span><?php esc_html_e( 'Decision API Protocol', 'ai-provider-for-lm-studio' ); ?></span>
+			</legend>
+			<label>
+				<input
+					type="radio"
+					name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_DECISION_PROTOCOL . ']' ); ?>"
+					value="<?php echo esc_attr( self::PROTOCOL_SYSTEMONE ); ?>"
+					<?php checked( $current, self::PROTOCOL_SYSTEMONE ); ?>
+				/>
+				<strong><?php esc_html_e( 'System One (/v1/systemone)', 'ai-provider-for-lm-studio' ); ?></strong>
+				<span class="description"> &mdash; <?php esc_html_e( 'Jev-compatible format supporting noul, choice, and score with granular probability distributions (Recommended).', 'ai-provider-for-lm-studio' ); ?></span>
+			</label>
+			<br /><br />
+			<label>
+				<input
+					type="radio"
+					name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_DECISION_PROTOCOL . ']' ); ?>"
+					value="<?php echo esc_attr( self::PROTOCOL_DECISIONS ); ?>"
+					<?php checked( $current, self::PROTOCOL_DECISIONS ); ?>
+				/>
+				<strong><?php esc_html_e( 'OpenAI-compatible (/v1/decisions)', 'ai-provider-for-lm-studio' ); ?></strong>
+				<span class="description"> &mdash; <?php esc_html_e( 'Standard OpenAI decisions format returning predicate and choice values.', 'ai-provider-for-lm-studio' ); ?></span>
+			</label>
+		</fieldset>
 		<?php
 	}
 
@@ -649,5 +714,21 @@ class LMStudioSettings {
 		}
 
 		return trim( (string) $settings[ self::KEY_REASONING ] );
+	}
+
+	/**
+	 * Gets the configured decision API protocol.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string Either 'systemone' or 'decisions'.
+	 */
+	public static function get_decision_protocol(): string {
+		$settings = self::get_settings();
+		$protocol = isset( $settings[ self::KEY_DECISION_PROTOCOL ] ) ? (string) $settings[ self::KEY_DECISION_PROTOCOL ] : self::PROTOCOL_SYSTEMONE;
+
+		return in_array( $protocol, [ self::PROTOCOL_SYSTEMONE, self::PROTOCOL_DECISIONS ], true )
+			? $protocol
+			: self::PROTOCOL_SYSTEMONE;
 	}
 }

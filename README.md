@@ -46,8 +46,10 @@ The plugin communicates with LM Studio's REST API:
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /api/v1/models` | Populate the model dropdown in settings |
+| `GET /api/v1/models` | Populate the model dropdown in settings and list models |
 | `POST /api/v1/chat` | Text generation requests |
+| `POST /v1/systemone` | Decision requests via System One (Jev-compatible) endpoint |
+| `POST /v1/decisions` | Decision requests via OpenAI-compatible endpoint |
 
 ### Limitations
 
@@ -162,6 +164,46 @@ You can use Connector for LM Studio's vision capabilities in any WordPress AI Cl
 
 - Alt text generation
 - Image captioning / analysis
+
+### Decision Models
+
+Decision models evaluate an input state against typed questions in a single forward pass, returning calibrated probabilities, categorical choices, or ordinal scores rather than generated conversational text.
+
+#### Supported Protocols
+Configure your preferred protocol under **Settings > LM Studio Settings > Decision API Protocol**:
+- **System One (`/v1/systemone`)** *(Default)*: Jev-compatible format supporting `noul` (boolean probability), `choice` (categorical selection), and `score` (ordinal ranking) with probability distributions.
+- **OpenAI-compatible (`/v1/decisions`)**: Standard OpenAI decisions format returning predicate and choice values.
+
+#### Usage Example
+
+```php
+use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
+use rtCamp\AIProviderForLMStudio\Decisions\DecisionQuestion;
+
+$model = LMStudioProvider::decisionModel( 'your-decision-model' );
+
+$result = $model->decide(
+    'I was charged twice for my subscription this month.',
+    [
+        'is_urgent' => DecisionQuestion::noul( 'The customer is experiencing a financial emergency.' ),
+        'category'  => DecisionQuestion::choice( [
+            'billing'   => 'Issues related to charges or payments',
+            'technical' => 'App bugs or login issues',
+        ] ),
+        'severity'  => DecisionQuestion::score(
+            'Rate severity level.',
+            [ 'low', 'medium', 'high', 'critical' ]
+        ),
+    ]
+);
+
+$is_urgent   = $result->getAnswer( 'is_urgent' )->getProbability(); // e.g. 0.88
+$category    = $result->getAnswer( 'category' )->getChoice();       // e.g. "billing"
+$severity    = $result->getAnswer( 'severity' )->getScore();        // e.g. 2.0
+$token_usage = $result->getTokenUsage();
+```
+
+You can also override the protocol per-request by passing the protocol string as the third parameter to `decide( $state, $questions, 'decisions' )`.
 
 ### Environment Overrides
 

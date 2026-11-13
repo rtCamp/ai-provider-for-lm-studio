@@ -20,6 +20,7 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 * Configure a default model for text generation from the admin settings page.
 * Automatic model discovery from your running LM Studio instance.
 * Text generation tasks using LM Studio's API.
+* Decision model tasks using System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) endpoints.
 * Vision-capable models, such as those used for generating alt-text, can process both text and images.
 * Settings page under **Settings > LM Studio Settings**.
 * Works without an API key in the default local setup.
@@ -78,6 +79,12 @@ Any LLM-type model loaded in LM Studio is supported. Vision-capable models also 
 The source code is available on <a href="https://github.com/rtCamp/ai-provider-for-lm-studio">GitHub</a>.
 
 == Changelog ==
+
+= 1.2.0 =
+
+* Added decision model capability support via LM Studio System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) APIs.
+* Added admin settings field with radio options to toggle between System One and OpenAI-compatible decision protocols.
+* Added LMStudioProvider::decisionModel() and LMStudioProvider::decisionModelIds().
 
 = 1.1.2 =
 

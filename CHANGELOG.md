@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0
+- Added decision model support via LM Studio System One (/v1/systemone) and OpenAI-compatible (/v1/decisions) endpoints.
+- Added admin settings radio field to switch between System One and OpenAI-compatible decision API protocols.
+- Added `LMStudioProvider::decisionModel()` and `LMStudioProvider::decisionModelIds()`.
+
 ## 1.1.2
 - Changed env variable from LMSTUDIO_HOST to AI_PROVIDER_FOR_LM_STUDIO_HOST
 - Renamed constants fro `_LMSTUDIO_` to `_LM_STUDIO_`
