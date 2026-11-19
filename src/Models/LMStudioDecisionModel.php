@@ -53,6 +53,11 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 	public const PROTOCOL_DECISIONS = 'decisions';
 
 	/**
+	 * Protocol identifier for Chat Completions fallback (for multimodal/vision inputs).
+	 */
+	public const PROTOCOL_CHAT = 'chat';
+
+	/**
 	 * The maximum number of questions in one request.
 	 *
 	 * @since 1.2.0
@@ -68,7 +73,7 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 	 *
 	 * @var int
 	 */
-	public const MAX_BODY_BYTES = 65536;
+	public const MAX_BODY_BYTES = 20971520;
 
 	/**
 	 * In-memory cache for resolved working decision endpoint per host URL.
@@ -96,10 +101,18 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the request fails or response is invalid.
 	 */
 	public function decide( $state, array $questions, ?string $protocol = null ): DecisionResult {
+		if ( $this->isMultimodalState( $state ) ) {
+			return $this->decideViaChatCompletions( $state, $questions );
+		}
+
 		$host_key = LMStudioProvider::url( '' );
 
 		$explicit = $this->resolveExplicitProtocol( $protocol );
 		if ( null !== $explicit ) {
+			if ( self::PROTOCOL_CHAT === $explicit['protocol'] ) {
+				return $this->decideViaChatCompletions( $state, $questions );
+			}
+
 			$response = $this->sendDecisionRequest( $explicit['endpoint'], $explicit['protocol'], $state, $questions );
 			ResponseUtil::throwIfNotSuccessful( $response );
 
@@ -250,6 +263,13 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 			return [
 				'endpoint' => 'v1/decisions',
 				'protocol' => self::PROTOCOL_DECISIONS,
+			];
+		}
+
+		if ( self::PROTOCOL_CHAT === $target || 'chat' === $target || 'chat_completions' === $target ) {
+			return [
+				'endpoint' => 'v1/chat/completions',
+				'protocol' => self::PROTOCOL_CHAT,
 			];
 		}
 
@@ -453,5 +473,245 @@ class LMStudioDecisionModel extends AbstractApiBasedModel {
 		}
 
 		return RequestOptions::fromArray( $options_array );
+	}
+
+	/**
+	 * Checks whether the state contains image data or image references.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param mixed $state The state to check.
+	 * @return bool True if state contains an image.
+	 */
+	private function isMultimodalState( $state ): bool {
+		if ( is_string( $state ) ) {
+			$trimmed = trim( $state );
+			if ( str_starts_with( $trimmed, 'data:image/' ) ) {
+				return true;
+			}
+
+			return 1 === preg_match( '#^https?://\S+\.(jpe?g|png|gif|webp|bmp|svg)(\?.*)?$#i', $trimmed );
+		}
+
+		if ( is_array( $state ) ) {
+			if ( isset( $state['images'] ) && is_array( $state['images'] ) && ! empty( $state['images'] ) ) {
+				return true;
+			}
+
+			foreach ( $state as $item ) {
+				if ( is_array( $item ) && ( ( isset( $item['type'] ) && 'image_url' === $item['type'] ) || isset( $item['image_url'] ) ) ) {
+					return true;
+				}
+				if ( is_string( $item ) && $this->isMultimodalState( $item ) ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Resolves the model ID to use for chat-completions decision evaluations.
+	 *
+	 * Prefers the selected general/vision model from settings if the decision model
+	 * is a text-only classifier.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The resolved model ID.
+	 */
+	private function resolveChatModelId(): string {
+		$selected_general_model = LMStudioSettings::get_selected_model();
+		if ( '' !== $selected_general_model && 'laya' !== $selected_general_model ) {
+			return $selected_general_model;
+		}
+
+		$model_id = $this->metadata()->getId();
+		if ( 'laya' !== $model_id && '' !== $model_id && 'default' !== $model_id ) {
+			return $model_id;
+		}
+
+		if ( '' !== $selected_general_model ) {
+			return $selected_general_model;
+		}
+
+		return 'default';
+	}
+
+	/**
+	 * Evaluates decision questions via the /v1/chat/completions endpoint.
+	 *
+	 * Used for multimodal (image) inputs and as a fallback when native decision endpoints
+	 * are unavailable or unsupported by the active model.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param mixed                                                                   $state     The content to judge.
+	 * @param array<string, \rtCamp\AIProviderForLMStudio\Decisions\DecisionQuestion> $questions The questions, keyed by name.
+	 * @return \rtCamp\AIProviderForLMStudio\Decisions\DecisionResult The parsed result.
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the request fails or response cannot be parsed.
+	 */
+	private function decideViaChatCompletions( $state, array $questions ): DecisionResult {
+		$model_id = $this->resolveChatModelId();
+
+		$question_instructions = [];
+		foreach ( $questions as $name => $question ) {
+			$type = $question->getType();
+			if ( $type->isNoul() ) {
+				$question_instructions[] = sprintf( '- "%s" (boolean: true or false): %s', $name, $question->getInstructions() );
+			} elseif ( $type->isChoice() ) {
+				$criteria                = $question->getCriteria();
+				$options                 = is_array( $criteria ) ? array_keys( $criteria ) : [];
+				$question_instructions[] = sprintf(
+					'- "%s" (choice from [%s]): %s',
+					$name,
+					implode( ', ', $options ),
+					$question->getInstructions()
+				);
+			} elseif ( $type->isScore() ) {
+				$question_instructions[] = sprintf( '- "%s" (number): %s', $name, $question->getInstructions() );
+			}
+		}
+
+		$schema_examples = [];
+		foreach ( array_keys( $questions ) as $name ) {
+			$schema_examples[] = '    "' . $name . '": <answer>';
+		}
+
+		$prompt = "You are a decision model. Evaluate the input/image against the following typed questions and return ONLY a valid JSON object matching the requested schema.\n\n"
+			. "Questions:\n" . implode( "\n", $question_instructions ) . "\n\n"
+			. "Return ONLY a valid JSON object with an \"answers\" key containing the answer for each question:\n"
+			. "{\n  \"answers\": {\n"
+			. implode( ",\n", $schema_examples )
+			. "\n  }\n}\n"
+			. 'Do not include any explanation or markdown outside the JSON.';
+
+		$content = [
+			[
+				'type' => 'text',
+				'text' => $prompt,
+			],
+		];
+
+		if ( is_string( $state ) ) {
+			$trimmed = trim( $state );
+			if ( str_starts_with( $trimmed, 'data:image/' ) || 1 === preg_match( '#^https?://#i', $trimmed ) ) {
+				$content[] = [
+					'type'      => 'image_url',
+					'image_url' => [
+						'url' => $trimmed,
+					],
+				];
+			} else {
+				$content[] = [
+					'type' => 'text',
+					'text' => $state,
+				];
+			}
+		} elseif ( is_array( $state ) ) {
+			if ( isset( $state['images'] ) && is_array( $state['images'] ) ) {
+				foreach ( $state['images'] as $img_url ) {
+					if ( ! is_string( $img_url ) ) {
+						continue;
+					}
+
+					$content[] = [
+						'type'      => 'image_url',
+						'image_url' => [ 'url' => $img_url ],
+					];
+				}
+			}
+			if ( isset( $state['text'] ) && is_string( $state['text'] ) ) {
+				$content[] = [
+					'type' => 'text',
+					'text' => $state['text'],
+				];
+			}
+		}
+
+		$payload = [
+			'model'       => $model_id,
+			'messages'    => [
+				[
+					'role'    => 'user',
+					'content' => $content,
+				],
+			],
+			'temperature' => 0.0,
+		];
+
+		$request = new Request(
+			HttpMethodEnum::POST(),
+			LMStudioProvider::url( 'v1/chat/completions' ),
+			[ 'Content-Type' => 'application/json' ],
+			$payload,
+			$this->prepareRequestOptions()
+		);
+
+		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
+		$response = Plugin::with_lmstudio_http_context(
+			function () use ( $request ): Response {
+				return $this->getHttpTransporter()->send( $request );
+			}
+		);
+
+		ResponseUtil::throwIfNotSuccessful( $response );
+
+		$response_data = $response->getData();
+		$raw_content   = '';
+		if ( isset( $response_data['choices'][0]['message']['content'] ) && is_string( $response_data['choices'][0]['message']['content'] ) ) {
+			$raw_content = trim( $response_data['choices'][0]['message']['content'] );
+		}
+
+		// Strip markdown code fences if present.
+		if ( 1 === preg_match( '/```(?:json)?\s*([\s\S]*?)\s*```/i', $raw_content, $matches ) ) {
+			$raw_content = trim( $matches[1] );
+		}
+
+		$decoded = json_decode( $raw_content, true );
+		if ( ! is_array( $decoded ) ) {
+			$first_brace = strpos( $raw_content, '{' );
+			$last_brace  = strrpos( $raw_content, '}' );
+			if ( false !== $first_brace && false !== $last_brace && $last_brace > $first_brace ) {
+				$json_candidate = substr( $raw_content, $first_brace, $last_brace - $first_brace + 1 );
+				$decoded        = json_decode( $json_candidate, true );
+			}
+		}
+
+		if ( ! is_array( $decoded ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+			throw new \WordPress\AiClient\Providers\Http\Exception\ResponseException(
+				'Failed to parse decision JSON from LM Studio chat response.'
+			);
+		}
+
+		$raw_answers = isset( $decoded['answers'] ) && is_array( $decoded['answers'] ) ? $decoded['answers'] : $decoded;
+		$answers     = [];
+		foreach ( $questions as $name => $question ) {
+			if ( ! array_key_exists( $name, $raw_answers ) ) {
+				// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped
+				throw \WordPress\AiClient\Providers\Http\Exception\ResponseException::fromMissingData(
+					$this->providerMetadata()->getName(),
+					'answers.' . $name
+				);
+			}
+
+			$answers[ $name ] = DecisionAnswer::fromResponseData(
+				$question->getType(),
+				$raw_answers[ $name ],
+				'answers.' . $name
+			);
+		}
+
+		$usage         = isset( $response_data['usage'] ) && is_array( $response_data['usage'] ) ? $response_data['usage'] : [];
+		$input_tokens  = isset( $usage['prompt_tokens'] ) && is_int( $usage['prompt_tokens'] ) ? $usage['prompt_tokens'] : 0;
+		$output_tokens = isset( $usage['completion_tokens'] ) && is_int( $usage['completion_tokens'] ) ? $usage['completion_tokens'] : 0;
+
+		return new DecisionResult(
+			$model_id,
+			$answers,
+			new TokenUsage( $input_tokens, $output_tokens, $input_tokens + $output_tokens )
+		);
 	}
 }
