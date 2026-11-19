@@ -116,6 +116,21 @@ class DecisionResult {
 	}
 
 	/**
+	 * Returns the answer to the given question.
+	 *
+	 * Alias for getAnswer().
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param string $name The question name.
+	 * @return \rtCamp\AIProviderForLMStudio\Decisions\DecisionAnswer The answer.
+	 * @throws \WordPress\AiClient\Common\Exception\InvalidArgumentException If no question by that name was asked.
+	 */
+	public function answer( string $name ): DecisionAnswer {
+		return $this->getAnswer( $name );
+	}
+
+	/**
 	 * Returns the token usage.
 	 *
 	 * @since 1.2.0
