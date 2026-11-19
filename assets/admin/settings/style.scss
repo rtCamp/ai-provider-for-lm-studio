@@ -259,7 +259,8 @@
 }
 
 // Container for dropdown selection
-#lmstudio-models-container {
+#lmstudio-models-container,
+#lmstudio-decision-models-container {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -272,7 +273,8 @@
 	max-width: 28rem;
 	gap: 16px;
 
-	[id="ai_provider_for_lm_studio_settings-model"] {
+	[id="ai_provider_for_lm_studio_settings-model"],
+	[id="ai_provider_for_lm_studio_settings-decision-model"] {
 		flex: 1;
 		min-width: 0;
 		max-width: 100% !important;

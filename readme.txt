@@ -18,8 +18,11 @@ This plugin provides [LM Studio](https://lmstudio.ai/) integration for the WordP
 
 * Connector for LM Studio registration for WordPress AI Client.
 * Configure a default model for text generation from the admin settings page.
-* Automatic model discovery from your running LM Studio instance.
+* Configure a default decision model on the settings page, defaulting to "Use model selected by AI Client".
+* Automatic model discovery from your running LM Studio instance with dedicated filtering for text and decision models.
 * Text generation tasks using LM Studio's API.
+* Automatic protocol support for both System One (/v1/systemone) and OpenAI-compatible (/v1/decisions, /v1/decision) endpoints.
+* Multimodal decision making support with image inputs for vision-capable decision models (e.g. Clef-Flash, OpenJev, d1-omni, Decision 3.0).
 * Vision-capable models, such as those used for generating alt-text, can process both text and images.
 * Settings page under **Settings > LM Studio Settings**.
 * Works without an API key in the default local setup.
@@ -73,11 +76,25 @@ Additionally make sure to turn off **thinking** ability of model in LM Studio se
 
 Any LLM-type model loaded in LM Studio is supported. Vision-capable models also support image input.
 
+For decision models, multimodal models (LiquidAI d1, Cloudflare Clef/Clef-Flash, OpenJev, Decision 3.0 / vllm-d3) and text classifiers (Julia-1, Laya, Kev-4B, lev, Bespoke-Nimble, nimble, tev1) or any model classified as `decision` in LM Studio are supported.
+
+= Does this support multimodal decision making? =
+
+Yes. Using the System One protocol (`/v1/systemone`), multimodal decision models can evaluate images by passing base64 image data URLs (e.g. `data:image/jpeg;base64,...`) or structured state arrays to `decide()`.
+
 == Source Code ==
 
 The source code is available on <a href="https://github.com/rtCamp/ai-provider-for-lm-studio">GitHub</a>.
 
 == Changelog ==
+
+= 1.2.0 =
+
+* Added decision model capability support with automatic negotiation for System One (/v1/systemone) and OpenAI-compatible (/v1/decisions, /v1/decision) endpoints.
+* Added default decision model setting on the settings page with "Use model selected by AI Client" as default.
+* Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
+* Added multimodal decision support with base64 image input for vision-enabled decision models.
+* Added LMStudioProvider::decisionModel() and LMStudioProvider::decisionModelIds().
 
 = 1.1.2 =
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+- Added decision model support with automatic negotiation across System One (/v1/systemone) and OpenAI-compatible (/v1/decisions, /v1/decision) endpoints.
+- Added default decision model setting on the admin settings page, defaulting to "Use model selected by AI Client".
+- Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
+- Added multimodal decision support with base64 image data URLs for vision-enabled decision models.
+- Added `LMStudioProvider::decisionModel()` and `LMStudioProvider::decisionModelIds()`.
+
 ## 1.1.2
 - Changed env variable from LMSTUDIO_HOST to AI_PROVIDER_FOR_LM_STUDIO_HOST
 - Renamed constants fro `_LMSTUDIO_` to `_LM_STUDIO_`

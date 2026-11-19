@@ -30,7 +30,7 @@ use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
  * @since 1.0.0
  *
  * @phpstan-type ModelsResponseData array{
- *     models: list<array{type: string, object?: string, key: string, capabilities?: array{vision?: bool, trained_for_tool_use?: bool}}>
+ *     models: list<array{type: string, object?: string, key: string, display_name?: string, architecture?: string, capabilities?: array<string, mixed>}>
  * }
  */
 class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirectory {
@@ -77,15 +77,21 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 		$models_map = [];
 
 		foreach ( $models_data['models'] as $model_entry ) {
-			if ( 'llm' !== $model_entry['type'] ) {
+			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
+				continue;
+			}
+
+			if ( ! isset( $model_entry['type'] ) || ! is_string( $model_entry['type'] ) || 'llm' !== $model_entry['type'] ) {
+				continue;
+			}
+
+			// Don't include decision models in the text generation model listing.
+			if ( self::isDecisionModelEntry( $model_entry ) ) {
 				continue;
 			}
 
 			$model_name = $model_entry['key'];
 			$metadata   = $this->buildModelMetadata( $model_name, $model_entry );
-			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
-				continue;
-			}
 
 			$models_map[ $model_name ] = $metadata;
 		}
@@ -160,6 +166,75 @@ class LMStudioModelMetadataDirectory extends AbstractApiBasedModelMetadataDirect
 			],
 			$options
 		);
+	}
+
+	/**
+	 * Lists the models that support decisions.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return list<string> The model IDs, sorted.
+	 * @throws \WordPress\AiClient\Providers\Http\Exception\ResponseException If the host is unreachable.
+	 */
+	public function listDecisionModelIds(): array {
+		$request  = $this->createRequest( HttpMethodEnum::GET(), 'api/v1/models' );
+		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
+		$response = Plugin::with_lmstudio_http_context(
+			function () use ( $request ): Response {
+				return $this->getHttpTransporter()->send( $request );
+			}
+		);
+
+		ResponseUtil::throwIfNotSuccessful( $response );
+
+		/** @var ModelsResponseData $models_data */
+		$models_data = $response->getData();
+		if ( ! isset( $models_data['models'] ) || ! is_array( $models_data['models'] ) ) {
+			return [];
+		}
+
+		$decision_model_ids = [];
+		foreach ( $models_data['models'] as $model_entry ) {
+			if ( ! isset( $model_entry['key'] ) || ! is_string( $model_entry['key'] ) || '' === trim( $model_entry['key'] ) ) {
+				continue;
+			}
+
+			if ( ! self::isDecisionModelEntry( $model_entry ) ) {
+				continue;
+			}
+
+			$decision_model_ids[] = $model_entry['key'];
+		}
+
+		sort( $decision_model_ids );
+
+		return $decision_model_ids;
+	}
+
+	/**
+	 * Checks whether a model entry represents a decision-making model.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @param array<string, mixed> $model_entry The model entry from LM Studio.
+	 * @return bool True if the model is a decision model, false otherwise.
+	 */
+	public static function isDecisionModelEntry( array $model_entry ): bool {
+		$type         = isset( $model_entry['type'] ) && is_string( $model_entry['type'] ) ? $model_entry['type'] : '';
+		$capabilities = isset( $model_entry['capabilities'] ) && is_array( $model_entry['capabilities'] ) ? $model_entry['capabilities'] : [];
+		$key          = isset( $model_entry['key'] ) && is_string( $model_entry['key'] ) ? trim( $model_entry['key'] ) : '';
+		$architecture = isset( $model_entry['architecture'] ) && is_string( $model_entry['architecture'] ) ? $model_entry['architecture'] : '';
+		$display_name = isset( $model_entry['display_name'] ) && is_string( $model_entry['display_name'] ) ? $model_entry['display_name'] : '';
+
+		$pattern = '/\b(decision|systemone|classifier|clef|openjev|jev|julia|laya|kev|lev|nimble|tev1|(?:vllm-)?(?:d1|d3)(?=[-_\b]|$))\b/i';
+
+		return 'decision' === $type
+			|| 'classifier' === $type
+			|| ( isset( $capabilities['decision'] ) && true === $capabilities['decision'] )
+			|| in_array( 'decision', $capabilities, true )
+			|| 1 === preg_match( $pattern, $key )
+			|| 1 === preg_match( $pattern, $architecture )
+			|| 1 === preg_match( $pattern, $display_name );
 	}
 
 	/**
