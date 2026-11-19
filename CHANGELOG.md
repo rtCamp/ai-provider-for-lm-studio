@@ -6,6 +6,9 @@
 - Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
 - Added multimodal decision support with base64 image data URLs for vision-enabled decision models.
 - Added `LMStudioProvider::decisionModel()` and `LMStudioProvider::decisionModelIds()`.
+- Added network-level host setting and permission restrictions for network administrators on multisite installations.
+- Scoped HTTP filters and localhost security overrides strictly to LM Studio requests.
+- Improved host connection error handling and validation in settings.
 
 ## 1.1.2
 - Changed env variable from LMSTUDIO_HOST to AI_PROVIDER_FOR_LM_STUDIO_HOST

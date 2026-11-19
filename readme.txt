@@ -3,7 +3,7 @@ Contributors:      rtcamp, milindmore22, vishal4669, aishwarryapande, aviralmitt
 Tags:              ai, lmstudio, llm, local-ai, connector
 Requires at least: 7.0
 Tested up to:      7.1
-Stable tag:        1.1.2
+Stable tag:        1.2.0
 Requires PHP:      7.4
 License:           GPL-2.0-or-later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -95,6 +95,9 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 * Added dedicated decision model filtering to list only decision-making models in the decision model dropdown.
 * Added multimodal decision support with base64 image input for vision-enabled decision models.
 * Added LMStudioProvider::decisionModel() and LMStudioProvider::decisionModelIds().
+* Added multisite support for host settings restricted to network administrators and saved at the network level.
+* Scoped HTTP security overrides and timeout filters strictly to LM Studio requests to protect core SSRF defenses.
+* Improved connection and host error handling with descriptive admin feedback.
 
 = 1.1.2 =
 
@@ -123,6 +126,10 @@ The source code is available on <a href="https://github.com/rtCamp/ai-provider-f
 * Automatic localhost allowlisting and extended HTTP timeout for local inference.
 
 == Upgrade Notice ==
+
+= 1.2.0 =
+
+* Adds decision model support, dedicated decision model settings, multimodal image decision support, and enhanced multisite host configuration.
 
 = 1.1.2 =
 

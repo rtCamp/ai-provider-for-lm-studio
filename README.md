@@ -61,8 +61,8 @@ The plugin communicates with LM Studio's REST API:
 
 - **WordPress:** 7.0 or higher
 - **Requires at least:** 7.0
-- **Tested up to:** 7.0
-- **Stable tag:** 1.1.2
+- **Tested up to:** 7.1
+- **Stable tag:** 1.2.0
 - **PHP:** 7.4 or higher
 - **Requires PHP:** 7.4
 - **LM Studio:** Local server must be running and accessible
@@ -334,7 +334,7 @@ Loading or warming up a large model in LM Studio can take a significant amount o
 
 ### Is multisite supported?
 
-The plugin can be network-activated on multisite. Each site's settings are managed independently via their own **Settings > LM Studio Settings** page.
+The plugin can be network-activated on multisite. On multisite installations, configuring the LM Studio Host URL is restricted to network administrators and saved at the network level, while individual subsite settings continue to manage model and reasoning options independently.
 
 ## Troubleshooting
 
