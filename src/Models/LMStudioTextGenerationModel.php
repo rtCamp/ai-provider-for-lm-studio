@@ -25,6 +25,7 @@ use WordPress\AiClient\Results\DTO\Candidate;
 use WordPress\AiClient\Results\DTO\GenerativeAiResult;
 use WordPress\AiClient\Results\DTO\TokenUsage;
 use WordPress\AiClient\Results\Enums\FinishReasonEnum;
+use rtCamp\AIProviderForLMStudio\Plugin;
 use rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider;
 use rtCamp\AIProviderForLMStudio\Settings\LMStudioSettings;
 
@@ -59,7 +60,11 @@ class LMStudioTextGenerationModel extends AbstractApiBasedModel implements TextG
 		);
 
 		$request  = $this->getRequestAuthentication()->authenticateRequest( $request );
-		$response = $this->getHttpTransporter()->send( $request );
+		$response = Plugin::with_lmstudio_http_context(
+			function () use ( $request ): Response {
+				return $this->getHttpTransporter()->send( $request );
+			}
+		);
 
 		ResponseUtil::throwIfNotSuccessful( $response );
 

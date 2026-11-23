@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WordPress\AiClient\AiClient;
+use rtCamp\AIProviderForLMStudio\Plugin;
 
 /**
  * Class for LM Studio settings in the WordPress admin.
@@ -24,12 +25,43 @@ use WordPress\AiClient\AiClient;
  */
 class LMStudioSettings {
 
-	private const OPTION_GROUP  = 'ai-provider-for-lm-studio-settings';
-	private const OPTION_NAME   = 'ai_provider_for_lm_studio_settings';
-	private const PAGE_SLUG     = 'ai-provider-for-lm-studio';
-	private const SECTION_ID    = 'ai_provider_for_lm_studio_main';
-	private const KEY_MODEL     = 'model';
-	private const KEY_REASONING = 'reasoning';
+	private const OPTION_GROUP   = 'ai-provider-for-lm-studio-settings';
+	private const OPTION_NAME    = 'ai_provider_for_lm_studio_settings';
+	private const HOST_SITE_META = 'ai_provider_for_lm_studio_settings_host';
+	private const PAGE_SLUG      = 'ai-provider-for-lm-studio';
+	private const SECTION_ID     = 'ai_provider_for_lm_studio_main';
+	private const KEY_MODEL      = 'model';
+	private const KEY_REASONING  = 'reasoning';
+
+	/**
+	 * Setting key for default decision model.
+	 */
+	public const KEY_DECISION_MODEL = 'decision_model';
+
+	/**
+	 * Gets the LM Studio host URL.
+	 *
+	 * Single source of truth for the configured host. Priority:
+	 * 1. Environment variable AI_PROVIDER_FOR_LM_STUDIO_HOST.
+	 * 2. Network-level option (multisite) or per-site option (single site).
+	 * 3. Default http://localhost:1234.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string The LM Studio host URL, without a trailing slash.
+	 */
+	public static function get_host(): string {
+		$env = getenv( 'AI_PROVIDER_FOR_LM_STUDIO_HOST' );
+		if ( false !== $env && '' !== $env ) {
+			return rtrim( $env, '/' );
+		}
+
+		$host = is_multisite()
+			? (string) get_site_option( self::HOST_SITE_META, '' )
+			: (string) ( self::get_settings()['host'] ?? '' );
+
+		return '' !== $host ? rtrim( $host, '/' ) : 'http://localhost:1234';
+	}
 
 	/**
 	 * Initializes the settings.
@@ -91,6 +123,15 @@ class LMStudioSettings {
 			self::PAGE_SLUG,
 			self::SECTION_ID
 		);
+
+		add_settings_field(
+			self::OPTION_NAME . '_' . self::KEY_DECISION_MODEL,
+			__( 'Default Decision Model', 'ai-provider-for-lm-studio' ),
+			[ $this, 'render_decision_model_field' ],
+			self::PAGE_SLUG,
+			self::SECTION_ID,
+			[ 'label_for' => self::OPTION_NAME . '-decision-model' ]
+		);
 	}
 
 	/**
@@ -121,20 +162,39 @@ class LMStudioSettings {
 			return self::get_default_settings();
 		}
 
-		$host      = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
-		$model     = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
-		$model     = trim( $model );
-		$reasoning = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
-		$reasoning = trim( $reasoning );
+		$host           = isset( $value['host'] ) ? trim( (string) $value['host'] ) : '';
+		$model          = isset( $value[ self::KEY_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_MODEL ] ) : '';
+		$model          = trim( $model );
+		$decision_model = isset( $value[ self::KEY_DECISION_MODEL ] ) ? sanitize_text_field( (string) $value[ self::KEY_DECISION_MODEL ] ) : '';
+		$decision_model = trim( $decision_model );
+		$reasoning      = isset( $value[ self::KEY_REASONING ] ) ? sanitize_text_field( (string) $value[ self::KEY_REASONING ] ) : '';
+		$reasoning      = trim( $reasoning );
 
 		if ( '' !== $host ) {
 			$host = rtrim( esc_url_raw( $host ), '/' );
 		}
 
+		if ( is_multisite() ) {
+			// On multisite, only network admins may change the host, and
+			// it is stored in a network-level option so subsite values
+			// are never trusted.
+			if ( current_user_can( 'manage_network_options' ) ) {
+				update_site_option( self::HOST_SITE_META, $host );
+			}
+
+			// Never store the host in the per-site option on multisite.
+			return [
+				self::KEY_MODEL          => $model,
+				self::KEY_DECISION_MODEL => $decision_model,
+				self::KEY_REASONING      => $reasoning,
+			];
+		}
+
 		return [
-			'host'              => $host,
-			self::KEY_MODEL     => $model,
-			self::KEY_REASONING => $reasoning,
+			'host'                   => $host,
+			self::KEY_MODEL          => $model,
+			self::KEY_DECISION_MODEL => $decision_model,
+			self::KEY_REASONING      => $reasoning,
 		];
 	}
 
@@ -215,8 +275,10 @@ class LMStudioSettings {
 	 * @since 1.0.0
 	 */
 	public function render_host_field(): void {
-		$settings = self::get_settings();
-		$value    = isset( $settings['host'] ) ? $settings['host'] : '';
+		$current_host = self::get_host();
+		// Show empty when it's just the default, so the placeholder is visible.
+		$value    = 'http://localhost:1234' === $current_host ? '' : $current_host;
+		$disabled = is_multisite() && ! current_user_can( 'manage_network_options' );
 		?>
 
 		<input
@@ -226,6 +288,7 @@ class LMStudioSettings {
 			value="<?php echo esc_attr( $value ); ?>"
 			class="regular-text"
 			placeholder="http://localhost:1234"
+			<?php disabled( $disabled ); ?>
 		/>
 		<p class="description">
 			<?php
@@ -236,6 +299,10 @@ class LMStudioSettings {
 				'</code>'
 			);
 			?>
+			<?php if ( $disabled ) : ?>
+				<br />
+				<strong><?php esc_html_e( 'On a multisite network, only network administrators can configure the host URL.', 'ai-provider-for-lm-studio' ); ?></strong>
+			<?php endif; ?>
 		</p>
 
 		<?php
@@ -273,6 +340,43 @@ class LMStudioSettings {
 		<p class="description">
 			<?php
 			echo esc_html__( 'Choose a default LM Studio model. If left empty, the model requested by AI Client is used.', 'ai-provider-for-lm-studio' );
+			?>
+		</p>
+		<?php
+	}
+
+	/**
+	 * Renders the available decision models dropdown.
+	 *
+	 * @since 1.2.0
+	 */
+	public function render_decision_model_field(): void {
+		$settings               = self::get_settings();
+		$current_decision_model = isset( $settings[ self::KEY_DECISION_MODEL ] ) ? (string) $settings[ self::KEY_DECISION_MODEL ] : '';
+		?>
+
+		<div id="lmstudio-decision-models-container">
+			<div class="lmstudio-models-row">
+				<select
+					id="<?php echo esc_attr( self::OPTION_NAME . '-decision-model' ); ?>"
+					name="<?php echo esc_attr( self::OPTION_NAME . '[' . self::KEY_DECISION_MODEL . ']' ); ?>"
+					class="regular-text"
+				>
+					<option value="">
+						<?php echo esc_html__( 'Use model selected by AI Client', 'ai-provider-for-lm-studio' ); ?>
+					</option>
+					<?php if ( '' !== $current_decision_model ) : ?>
+						<option value="<?php echo esc_attr( $current_decision_model ); ?>" selected="selected">
+							<?php echo esc_html( $current_decision_model ); ?>
+						</option>
+					<?php endif; ?>
+				</select>
+				<span id="lmstudio-decision-model-status"></span>
+			</div>
+		</div>
+		<p class="description">
+			<?php
+			echo esc_html__( 'Choose a default LM Studio model for decision making. If left empty, the model requested by AI Client is used.', 'ai-provider-for-lm-studio' );
 			?>
 		</p>
 		<?php
@@ -340,9 +444,10 @@ class LMStudioSettings {
 			'ai-provider-for-lm-studio-settings',
 			'AIProviderForLMStudioSettings',
 			[
-				'selectedModel'     => self::get_selected_model(),
-				'selectedReasoning' => self::get_selected_reasoning(),
-				'svgs'              => $svgs,
+				'selectedModel'         => self::get_selected_model(),
+				'selectedDecisionModel' => self::get_selected_decision_model(),
+				'selectedReasoning'     => self::get_selected_reasoning(),
+				'svgs'                  => $svgs,
 			]
 		);
 	}
@@ -369,6 +474,16 @@ class LMStudioSettings {
 			[
 				'methods'             => 'GET',
 				'callback'            => [ $this, 'get_capabilities_endpoint' ],
+				'permission_callback' => [ $this, 'check_rest_permissions' ],
+			]
+		);
+
+		register_rest_route(
+			'ai-provider-for-lm-studio/v1',
+			'/decision-models',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_decision_models_endpoint' ],
 				'permission_callback' => [ $this, 'check_rest_permissions' ],
 			]
 		);
@@ -426,6 +541,55 @@ class LMStudioSettings {
 	}
 
 	/**
+	 * REST API endpoint to retrieve available decision models.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return \WP_REST_Response The REST response.
+	 */
+	public function get_decision_models_endpoint(): \WP_REST_Response {
+		$provider_id = 'lmstudio';
+		$registry    = AiClient::defaultRegistry();
+
+		if ( ! $registry->hasProvider( $provider_id ) ) {
+			return new \WP_REST_Response( [ 'message' => __( 'AI provider not found.', 'ai-provider-for-lm-studio' ) ], 404 );
+		}
+
+		$provider_classname = $registry->getProviderClassName( $provider_id );
+
+		try {
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			$provider_availability = $provider_classname::availability();
+			if ( ! $provider_availability->isConfigured() ) {
+				return new \WP_REST_Response( [ 'message' => __( 'AI provider not configured - missing API credentials.', 'ai-provider-for-lm-studio' ) ], 400 );
+			}
+
+			$decision_model_ids = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::decisionModelIds();
+
+			$decision_models = array_map(
+				static function ( string $id ): array {
+					return [
+						'id'   => $id,
+						'name' => $id,
+						'key'  => $id,
+					];
+				},
+				$decision_model_ids
+			);
+
+			return new \WP_REST_Response( $decision_models, 200 );
+		} catch ( \Throwable $e ) {
+			return new \WP_REST_Response(
+				[
+					// translators: %s: Error message.
+					'message' => sprintf( __( 'Could not list decision models for provider. Error: %s', 'ai-provider-for-lm-studio' ), $e->getMessage() ),
+				],
+				500
+			);
+		}
+	}
+
+	/**
 	 * Gets settings from the WordPress option.
 	 *
 	 * @since 1.0.0
@@ -447,9 +611,10 @@ class LMStudioSettings {
 	 */
 	private static function get_default_settings(): array {
 		return [
-			'host'              => '',
-			self::KEY_MODEL     => '',
-			self::KEY_REASONING => '',
+			'host'                   => '',
+			self::KEY_MODEL          => '',
+			self::KEY_DECISION_MODEL => '',
+			self::KEY_REASONING      => '',
 		];
 	}
 
@@ -468,6 +633,23 @@ class LMStudioSettings {
 		}
 
 		return trim( (string) $settings[ self::KEY_MODEL ] );
+	}
+
+	/**
+	 * Gets selected default decision model.
+	 *
+	 * @since 1.2.0
+	 *
+	 * @return string Selected decision model ID, or empty string when unset.
+	 */
+	public static function get_selected_decision_model(): string {
+		$settings = self::get_settings();
+
+		if ( ! isset( $settings[ self::KEY_DECISION_MODEL ] ) ) {
+			return '';
+		}
+
+		return trim( (string) $settings[ self::KEY_DECISION_MODEL ] );
 	}
 
 	/**
@@ -513,16 +695,14 @@ class LMStudioSettings {
 	public function get_capabilities_endpoint(): \WP_REST_Response {
 		$url = \rtCamp\AIProviderForLMStudio\Provider\LMStudioProvider::url( 'api/v1/models' );
 
-		// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.wp_remote_get_wp_remote_get
-		$response = wp_remote_get(
-			$url,
-			[
-				'sslverify' => false,
-			]
+		$response = Plugin::with_lmstudio_http_context(
+			static function () use ( $url ) {
+				return wp_safe_remote_get( $url );
+			}
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return new \WP_REST_Response( [ 'message' => $response->get_error_message() ], 500 );
+			return new \WP_REST_Response( [ 'message' => __( 'Could not connect to LM Studio server.', 'ai-provider-for-lm-studio' ) ], 500 );
 		}
 
 		$body = wp_remote_retrieve_body( $response );
@@ -536,6 +716,10 @@ class LMStudioSettings {
 
 		foreach ( $data['models'] as $model ) {
 			if ( ! is_array( $model ) || ! isset( $model['key'] ) || ! isset( $model['type'] ) || 'llm' !== $model['type'] ) {
+				continue;
+			}
+
+			if ( \rtCamp\AIProviderForLMStudio\Metadata\LMStudioModelMetadataDirectory::isDecisionModelEntry( $model ) ) {
 				continue;
 			}
 
